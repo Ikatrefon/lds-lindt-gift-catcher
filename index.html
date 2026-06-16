@@ -220,7 +220,8 @@
   #hud .hud-score .lbl { font-size: 0.62rem; display: block; color: #a07840; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
   #hud .hud-time { color: #f5c842; font-size: 2.4rem; line-height: 1; }
   #hud .hud-time .lbl { font-size: 0.62rem; display: block; color: #a07840; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
-  #hud .hud-time.low #time-val { color: #e74c3c; }
+  #hud .hud-time .unit { font-size: 1rem; color: #f5c842; margin-left: 4px; letter-spacing: 0.04em; }
+  #hud .hud-time.low #time-val, #hud .hud-time.low .unit { color: #e74c3c; }
   #hud .hud-lives { display: flex; gap: 5px; align-items: center; flex-direction: column; }
   #hud .hud-lives .lbl { font-size: 0.62rem; color: #a07840; letter-spacing: 0.1em; text-transform: uppercase; }
   #hud .hud-lives .hearts-row { display: flex; gap: 5px; }
@@ -618,7 +619,7 @@
       </div>
       <div class="hud-time" id="time-display">
         <span class="lbl">Time</span>
-        <span id="time-val">15</span>
+        <span id="time-val">20</span><span class="unit">sec</span>
       </div>
     </div>
     <div class="hud-lives" id="lives-display">
@@ -858,7 +859,7 @@ function pickItemDef() {
   return ITEM_DEFS[0]
 }
 
-const GAME_TIME = 15   // czas rozgrywki w sekundach
+const GAME_TIME = 20   // czas rozgrywki w sekundach
 let score = 0
 let lives = 3
 let timeLeft = GAME_TIME
@@ -873,7 +874,7 @@ let touchX = null
 let lastTime = null
 let timerInterval = null
 let spawnTimer = 0
-let spawnInterval = 1304   // bazowy odstęp spawnu (1500 / 1.15 → o 15% częściej = ~15% więcej sztuk)
+let spawnInterval = 950    // bazowy odstęp spawnu — krótszy = więcej spadających produktów
 
 function resize() {
   canvas.width = container.offsetWidth
@@ -886,7 +887,7 @@ function startGame() {
   score = 0; lives = 3; timeLeft = GAME_TIME
   items = []; basketContents = []
   tiltX = 0; rawTiltX = 0; touchX = null
-  spawnTimer = 0; spawnInterval = 1304
+  spawnTimer = 0; spawnInterval = 950
   basket.x = (canvas.width - basket.w) / 2
 
   updateHUD()
@@ -934,8 +935,8 @@ function spawnItem() {
     x: Math.random() * (canvas.width - w),
     y: -h,
     w, h,
-    // +10% prędkości; delikatne przyspieszanie w miarę upływu czasu (od startu GAME_TIME)
-    vy: (1.3 + Math.random() * 1.2 + (GAME_TIME - timeLeft) * 0.018) * 1.10,
+    // prędkość: dwa kroki po +10% = ×1.21; delikatne przyspieszanie w miarę upływu czasu
+    vy: (1.3 + Math.random() * 1.2 + (GAME_TIME - timeLeft) * 0.018) * 1.21,
   })
 }
 
@@ -959,7 +960,7 @@ function gameLoop(ts) {
   spawnTimer += dt
   if (spawnTimer >= spawnInterval) {
     spawnTimer = 0
-    spawnInterval = Math.max(609, spawnInterval - 12)   // dolny limit 700 / 1.15
+    spawnInterval = Math.max(430, spawnInterval - 12)   // dolny limit — jeszcze gęściej z czasem
     spawnItem()
   }
 
