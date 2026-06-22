@@ -597,9 +597,9 @@
       <img src="ELEMENTY/Lindo-a.png" alt="">
       <img src="ELEMENTY/Lindo-b.png" alt="">
       <img src="ELEMENTY/Lindo-c.png" alt="">
-      <img src="ELEMENTY/box-a.png" alt="">
+      <img src="ELEMENTY/MILK.png" alt="">
       <img src="ELEMENTY/Lindo-d.png" alt="">
-      <img src="ELEMENTY/bear.png" alt="">
+      <img src="ELEMENTY/MILK HAZELNUT.png" alt="">
     </div>
 
     <button class="btn-play" onclick="onPlayPressed()">▶ Play &amp; Win</button>
@@ -802,19 +802,20 @@ const canvas = document.getElementById('game-canvas')
 const ctx = canvas.getContext('2d')
 const container = document.getElementById('game-container')
 
+// tylko pralinki LINDOR (7 starych + 5 nowych packshotów); bez misiów/królików/pudełek
 const ITEM_DEFS = [
-  { src: 'ELEMENTY/Lindo-a.png', pts: 5, w: 3 },
-  { src: 'ELEMENTY/Lindo-b.png', pts: 5, w: 3 },
-  { src: 'ELEMENTY/Lindo-c.png', pts: 5, w: 3 },
-  { src: 'ELEMENTY/Lindo-d.png', pts: 5, w: 3 },
-  { src: 'ELEMENTY/Lindo-e.png', pts: 5, w: 3 },
-  { src: 'ELEMENTY/Lindo-f.png', pts: 5, w: 3 },
-  { src: 'ELEMENTY/Lindo-g.png', pts: 5, w: 3 },
-  { src: 'ELEMENTY/bear.png',   pts: 15, w: 1 },
-  { src: 'ELEMENTY/bunny.png',  pts: 15, w: 1 },
-  { src: 'ELEMENTY/box-a.png',  pts: 10, w: 2 },
-  { src: 'ELEMENTY/box-b.png',  pts: 10, w: 2 },
-  { src: 'ELEMENTY/box-c.png',  pts: 10, w: 2 },
+  { src: 'ELEMENTY/Lindo-a.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/Lindo-b.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/Lindo-c.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/Lindo-d.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/Lindo-e.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/Lindo-f.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/Lindo-g.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/MILK.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/Extra Dark.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/MILK HAZELNUT.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/MILK SEASALT CARAMEL.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/MILK STRAWBERRY CREAM.png', pts: 5, w: 1 },
 ]
 
 const images = {}
@@ -923,9 +924,8 @@ function updateHUD() {
 
 function spawnItem() {
   const def = pickItemDef()
-  // target width per category × 0.75, height derived from natural image ratio
-  const targetW = (def.src.includes('box') ? 58
-    : (def.src.includes('bear') || def.src.includes('bunny') ? 62 : 52)) * 0.75
+  // wszystkie to pralinki LINDOR — jednolita szerokość, wysokość z proporcji obrazu
+  const targetW = 52 * 0.75
   const ratio = (def.naturalH && def.naturalW) ? def.naturalH / def.naturalW : 1
   const w = targetW
   const h = targetW * ratio
@@ -935,8 +935,11 @@ function spawnItem() {
     x: Math.random() * (canvas.width - w),
     y: -h,
     w, h,
-    // prędkość: dwa kroki po +10% = ×1.21; delikatne przyspieszanie w miarę upływu czasu
-    vy: (1.3 + Math.random() * 1.2 + (GAME_TIME - timeLeft) * 0.018) * 1.21,
+    t: 0,
+    swayPh: Math.random() * Math.PI * 2,        // faza kołysania
+    swayFr: 0.0035 + Math.random() * 0.003,     // częstotliwość kołysania (na ms)
+    // prędkość: trochę szybciej (×1.38) + delikatne przyspieszanie z czasem
+    vy: (1.3 + Math.random() * 1.2 + (GAME_TIME - timeLeft) * 0.018) * 1.38,
   })
 }
 
@@ -969,6 +972,7 @@ function gameLoop(ts) {
   for (let i = items.length - 1; i >= 0; i--) {
     const item = items[i]
     item.y += item.vy * (dt / 16)
+    item.t += dt
 
     // Collision with basket
     if (
@@ -1008,7 +1012,12 @@ function gameLoop(ts) {
 
 function drawItems() {
   items.forEach(item => {
-    ctx.drawImage(item.img, item.x, item.y, item.w, item.h)
+    const a = Math.sin(item.t * item.swayFr + item.swayPh) * 0.22   // ±~13° kołysanie jak od powietrza
+    ctx.save()
+    ctx.translate(item.x + item.w / 2, item.y + item.h / 2)
+    ctx.rotate(a)
+    ctx.drawImage(item.img, -item.w / 2, -item.h / 2, item.w, item.h)
+    ctx.restore()
   })
 }
 
