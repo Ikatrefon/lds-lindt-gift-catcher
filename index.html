@@ -205,15 +205,17 @@
   /* ── HUD ── */
   #hud {
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 0;
     right: 0;
     z-index: 20;
+    height: 92px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 20px 10px;
-    background: linear-gradient(180deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.15) 100%);
+    padding: 0 24px;
+    background: #000;
+    border-top: 2px solid rgba(245,200,66,0.55);
   }
   #hud .hud-main { display: flex; gap: 22px; align-items: flex-start; }
   #hud .hud-score { color: #f5c842; font-size: 2.4rem; line-height: 1; }
@@ -861,6 +863,7 @@ function pickItemDef() {
 }
 
 const GAME_TIME = 20   // czas rozgrywki w sekundach
+const HUD_H = 92       // wysokość czarnego paska HUD na dole (px)
 let score = 0
 let lives = 3
 let timeLeft = GAME_TIME
@@ -880,7 +883,7 @@ let spawnInterval = 950    // bazowy odstęp spawnu — krótszy = więcej spada
 function resize() {
   canvas.width = container.offsetWidth
   canvas.height = container.offsetHeight
-  basket.y = canvas.height - basket.h - 16
+  basket.y = canvas.height - HUD_H - basket.h - 14   // nad czarnym paskiem HUD
   basket.x = Math.min(Math.max(basket.x, 0), canvas.width - basket.w)
 }
 
@@ -991,8 +994,8 @@ function gameLoop(ts) {
       continue
     }
 
-    // Off screen
-    if (item.y > canvas.height + 10) {
+    // Pominięte — przeleciało poniżej koszyka (nad paskiem HUD)
+    if (item.y > basket.y + basket.h + 20) {
       lives--
       updateHUD()
       playMiss()
