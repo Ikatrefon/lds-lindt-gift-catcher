@@ -266,11 +266,11 @@
     line-height: 1.2;
   }
   #result-screen .result-score {
-    color: #d4956a;
+    color: #ffffff;
     font-size: 1rem;
     letter-spacing: 0.06em;
   }
-  #result-screen .result-score strong { color: #BB9750; font-size: 1.4rem; }
+  #result-screen .result-score strong { color: #ffffff; font-size: 1.4rem; }
   #result-screen .discount-box {
     background: linear-gradient(135deg, rgba(200,150,30,0.15), rgba(200,150,30,0.05));
     border: 1px solid rgba(245,200,66,0.3);
@@ -772,10 +772,9 @@ const canvas = document.getElementById('game-canvas')
 const ctx = canvas.getContext('2d')
 const container = document.getElementById('game-container')
 
-// ── gęsty śnieg (generowany) ──
-;(function makeSnow(){
-  const N = 90
-  for (let i = 0; i < N; i++){
+// ── padający śnieg (generowany) — w grze + na ekranie startowym i końcowym ──
+function genSnow(target, n, z){
+  for (let i = 0; i < n; i++){
     const f = document.createElement('div')
     f.className = 'snow'
     const s = 2 + Math.random() * 4
@@ -783,9 +782,13 @@ const container = document.getElementById('game-container')
     f.style.left = (Math.random() * 100) + '%'
     f.style.animationDuration = (5 + Math.random() * 7) + 's'
     f.style.animationDelay = (-Math.random() * 8) + 's'
-    container.insertBefore(f, container.firstChild)
+    if (z != null) f.style.zIndex = z
+    target.insertBefore(f, target.firstChild)
   }
-})()
+}
+genSnow(container, 90)                                              // pole gry (z-index 2)
+genSnow(document.getElementById('start-screen'), 55, -1)           // za treścią ekranu startowego
+genSnow(document.getElementById('result-screen'), 55, -1)          // za treścią ekranu końcowego
 
 // ── karuzela pralinek na ekranie startowym (obrót skokowy z pauzą) ──
 ;(function carousel(){
