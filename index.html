@@ -35,7 +35,39 @@
     height: 100dvh;
     max-width: 480px;
     overflow: hidden;
+    background: #1a0a00;
+  }
+  /* osobna warstwa tła gry — można ją blurować bez ruszania reszty */
+  #game-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
     background: url('ELEMENTY/background-red.jpg') center/cover no-repeat;
+    transform: scale(1.06);          /* overscan, by blur nie odsłaniał krawędzi */
+    will-change: filter;
+  }
+  /* odliczanie 3-2-1 */
+  #countdown {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  #countdown.hidden { display: none; }
+  #countdown span {
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    font-size: 7rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 4px 26px rgba(0,0,0,0.55), 0 0 44px rgba(245,200,66,0.6);
+  }
+  @keyframes cdPop {
+    0%   { transform: scale(2.3); opacity: 0; }
+    35%  { opacity: 1; }
+    100% { transform: scale(1);   opacity: 0.95; }
   }
 
   /* ──────────── CHRISTMAS DECOR ──────────── */
@@ -371,6 +403,9 @@
 <body>
 <div id="game-container">
 
+  <!-- warstwa tła gry (osobno, by móc blurować tylko tło) -->
+  <div id="game-bg"></div>
+
   <!-- ── ANIMATED SNOW (generowany w JS — gęsty) ── -->
 
   <!-- ── TWINKLING STARS ── -->
@@ -604,6 +639,9 @@
   <!-- GAME CANVAS -->
   <canvas id="game-canvas"></canvas>
 
+  <!-- odliczanie 3-2-1 przed startem -->
+  <div id="countdown" class="hidden"><span></span></div>
+
   <!-- RESULT SCREEN -->
   <div id="result-screen" class="screen hidden">
     <img src="ELEMENTY/Lindt-logo.png" class="logo" alt="Lindt">
@@ -771,6 +809,13 @@ function stopMusic() {
 const canvas = document.getElementById('game-canvas')
 const ctx = canvas.getContext('2d')
 const container = document.getElementById('game-container')
+const gameBg = document.getElementById('game-bg')
+
+// ── PRÓBA: blur tła w trakcie gry (false = wersja pierwotna, ostre tło) ──
+const BG_BLUR_TRIAL = true
+const BG_BLUR_MAX = 5            // maksymalny blur tła [px]
+let playMs = 0                   // czas rozgrywki (ms) — do krzywej blura
+let outroParticles = []          // wybuchy pralinek na końcu
 
 // ── padający śnieg (generowany) — w grze + na ekranie startowym i końcowym ──
 function genSnow(target, n, z){
@@ -925,9 +970,9 @@ function resize() {
 
 function startGame() {
   score = 0; lives = 3; timeLeft = GAME_TIME
-  items = []; basketContents = []
+  items = []; basketContents = []; outroParticles = []
   tiltX = 0; rawTiltX = 0; touchX = null
-  spawnTimer = 0; spawnInterval = 1100
+  spawnTimer = 0; spawnInterval = 1100; playMs = 0
   basket.x = (canvas.width - basket.w) / 2
 
   updateHUD()
@@ -937,20 +982,51 @@ function startGame() {
   document.getElementById('game-canvas').style.display = 'block'
   document.getElementById('start-screen').classList.add('hidden')
   document.getElementById('result-screen').classList.add('hidden')
+  if (BG_BLUR_TRIAL) gameBg.style.filter = 'blur(0px)'   // start: ostro
 
   requestWakeLock()
+  drawStaticFrame()            // pokaż tacę/blik podczas odliczania
+  runCountdown(beginPlay)
+}
+
+function drawStaticFrame() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  drawBlik()
+  drawBasket()
+}
+
+function runCountdown(cb) {
+  const el = document.getElementById('countdown')
+  const span = el.querySelector('span')
+  el.classList.remove('hidden')
+  let n = 3
+  function step() {
+    if (n > 0) {
+      span.textContent = n
+      span.style.animation = 'none'; void span.offsetWidth; span.style.animation = 'cdPop 0.8s ease-out forwards'
+      beep(420 + (3 - n) * 90, 0.12, 'sine', 0.13)
+      n--
+      setTimeout(step, 800)
+    } else {
+      span.textContent = 'GO!'
+      span.style.animation = 'none'; void span.offsetWidth; span.style.animation = 'cdPop 0.6s ease-out forwards'
+      beep(880, 0.22, 'sine', 0.15)
+      setTimeout(() => { el.classList.add('hidden'); cb() }, 560)
+    }
+  }
+  step()
+}
+
+function beginPlay() {
   gameRunning = true
   lastTime = performance.now()
-
   startMusic()
-
   timerInterval = setInterval(() => {
     timeLeft--
     document.getElementById('time-val').textContent = Math.max(0, timeLeft)
     if (timeLeft <= 5) document.getElementById('time-display').classList.add('low')
     if (timeLeft <= 0) endGame()
   }, 1000)
-
   requestAnimationFrame(gameLoop)
 }
 
@@ -993,6 +1069,16 @@ function gameLoop(ts) {
   if (!gameRunning) return
   const dt = Math.min(ts - lastTime, 50)
   lastTime = ts
+  playMs += dt
+
+  // PRÓBA: blur tła — ostro na starcie, narasta, ostatnie 2 s znów ostro
+  if (BG_BLUR_TRIAL) {
+    const el = playMs / 1000
+    let bl
+    if (el >= GAME_TIME - 2) bl = BG_BLUR_MAX * Math.max(0, 1 - (el - (GAME_TIME - 2)) / 2)
+    else bl = BG_BLUR_MAX * Math.min(1, el / 12)
+    gameBg.style.filter = `blur(${bl.toFixed(2)}px)`
+  }
 
   // Basket movement — lerp tiltX for smooth tilt response
   tiltX += (rawTiltX - tiltX) * 0.09
@@ -1131,8 +1217,44 @@ function endGame() {
   playGameOver()
   releaseWakeLock()
   document.getElementById('hud').style.display = 'none'
+  if (BG_BLUR_TRIAL) gameBg.style.filter = 'blur(0px)'   // koniec: ostro
+  runOutro()
+}
 
-  setTimeout(() => showResult(), 600)
+// kolorowy wybuch w punkcie (reużywa cząstek fajerwerków)
+function burstAt(x, y) {
+  const color = FW_COLORS[(Math.random() * FW_COLORS.length) | 0]
+  const n = 22 + (Math.random() * 10 | 0)
+  for (let i = 0; i < n; i++) outroParticles.push(new FWParticle(x, y, color))
+  beep(560 + Math.random() * 420, 0.07, 'triangle', 0.06)
+}
+
+// na koniec: pralinki które nie spadły znikają po kolei wybuchając
+function runOutro() {
+  if (items.length === 0) { setTimeout(showResult, 450); return }
+  let idx = 0, last = performance.now(), lastPop = 0
+  function loop(ts) {
+    const dt = Math.min(ts - last, 50); last = ts
+    if (idx < items.length && ts - lastPop >= 130) {   // co 130 ms kolejna
+      lastPop = ts
+      const it = items[idx]; idx++
+      burstAt(it.x + it.w / 2, it.y + it.h / 2)
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    drawBlik()
+    for (let i = idx; i < items.length; i++) {          // jeszcze niewybuchnięte
+      const item = items[i]
+      const a = Math.sin(item.t * item.swayFr + item.swayPh) * 0.22
+      ctx.save(); ctx.translate(item.x + item.w / 2, item.y + item.h / 2); ctx.rotate(a)
+      ctx.drawImage(item.img, -item.w / 2, -item.h / 2, item.w, item.h); ctx.restore()
+    }
+    drawBasket()
+    outroParticles = outroParticles.filter(p => { p.update(); p.draw(ctx); return !p.dead })
+    ctx.globalAlpha = 1
+    if (idx < items.length || outroParticles.length) requestAnimationFrame(loop)
+    else { items = []; setTimeout(showResult, 350) }
+  }
+  requestAnimationFrame(loop)
 }
 
 function showResult() {
