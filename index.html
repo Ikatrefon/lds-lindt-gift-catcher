@@ -135,7 +135,7 @@
   }
 
   #start-screen .logo {
-    width: 120px;
+    width: 150px;
     margin-bottom: 16px;
     filter: drop-shadow(0 2px 8px rgba(245,200,66,0.4));
   }
@@ -255,8 +255,8 @@
     text-align: center;
   }
   #result-screen .logo {
-    width: 90px;
-    margin-bottom: 8px;
+    width: 150px;
+    margin-bottom: 16px;
     filter: drop-shadow(0 2px 8px rgba(245,200,66,0.4));
   }
   #result-screen h2 {
@@ -878,7 +878,7 @@ function pickItemDef() {
 const GAME_TIME = 20   // czas rozgrywki w sekundach
 const HUD_H = 92       // wysokość czarnego paska HUD na dole (px)
 // BLIK rysowany w kodzie (osobna warstwa na canvasie) — w pełni przesuwalny:
-let BLIK_FRAC = 0.80          // pozycja środka blika jako ułamek wysokości ekranu (PRZESUWALNE góra/dół)
+let BLIK_FRAC = 0.84          // pozycja środka blika jako ułamek wysokości ekranu (PRZESUWALNE góra/dół)
 const BLIK_WHALF = 0.48       // pół-szerokość smugi (ułamek szerokości)
 const BLIK_HHALF = 0.024      // pół-wysokość smugi (ułamek wysokości)
 function blikY() { return BLIK_FRAC * canvas.height }
