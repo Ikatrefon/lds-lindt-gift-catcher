@@ -1071,12 +1071,9 @@ function gameLoop(ts) {
   lastTime = ts
   playMs += dt
 
-  // PRÓBA: blur tła — ostro na starcie, narasta, ostatnie 2 s znów ostro
+  // PRÓBA: blur tła — ostro na starcie, narasta do max i zostaje (bez powrotu do ostrości)
   if (BG_BLUR_TRIAL) {
-    const el = playMs / 1000
-    let bl
-    if (el >= GAME_TIME - 2) bl = BG_BLUR_MAX * Math.max(0, 1 - (el - (GAME_TIME - 2)) / 2)
-    else bl = BG_BLUR_MAX * Math.min(1, el / 12)
+    const bl = BG_BLUR_MAX * Math.min(1, (playMs / 1000) / 12)
     gameBg.style.filter = `blur(${bl.toFixed(2)}px)`
   }
 
@@ -1217,7 +1214,7 @@ function endGame() {
   playGameOver()
   releaseWakeLock()
   document.getElementById('hud').style.display = 'none'
-  if (BG_BLUR_TRIAL) gameBg.style.filter = 'blur(0px)'   // koniec: ostro
+  // blur tła zostaje (nie wracamy do ostrości); zresetuje go dopiero nowa gra
   runOutro()
 }
 
@@ -1235,7 +1232,7 @@ function runOutro() {
   let idx = 0, last = performance.now(), lastPop = 0
   function loop(ts) {
     const dt = Math.min(ts - last, 50); last = ts
-    if (idx < items.length && ts - lastPop >= 130) {   // co 130 ms kolejna
+    if (idx < items.length && ts - lastPop >= 480) {   // co 480 ms kolejna (wolno)
       lastPop = ts
       const it = items[idx]; idx++
       burstAt(it.x + it.w / 2, it.y + it.h / 2)
