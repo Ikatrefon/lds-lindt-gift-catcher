@@ -57,7 +57,7 @@
   }
   .sparkle::before {
     content: '✦';
-    color: #f5c842;
+    color: #BB9750;
     font-size: 10px;
   }
   @keyframes twinkle {
@@ -142,7 +142,7 @@
 
   #start-screen h1 {
     font-size: 2.6rem;
-    color: #f5c842;
+    color: #BB9750;
     letter-spacing: 0.04em;
     text-shadow: 0 2px 12px rgba(245,200,66,0.5);
     line-height: 1.1;
@@ -225,11 +225,11 @@
     border-top: 2px solid rgba(245,200,66,0.55);
   }
   #hud .hud-main { display: flex; gap: 22px; align-items: flex-start; }
-  #hud .hud-score { color: #f5c842; font-size: 2.4rem; line-height: 1; }
+  #hud .hud-score { color: #BB9750; font-size: 2.4rem; line-height: 1; }
   #hud .hud-score .lbl { font-size: 0.62rem; display: block; color: #a07840; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
-  #hud .hud-time { color: #f5c842; font-size: 2.4rem; line-height: 1; }
+  #hud .hud-time { color: #BB9750; font-size: 2.4rem; line-height: 1; }
   #hud .hud-time .lbl { font-size: 0.62rem; display: block; color: #a07840; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
-  #hud .hud-time .unit { font-size: 1rem; color: #f5c842; margin-left: 4px; letter-spacing: 0.04em; }
+  #hud .hud-time .unit { font-size: 1rem; color: #BB9750; margin-left: 4px; letter-spacing: 0.04em; }
   #hud .hud-time.low #time-val, #hud .hud-time.low .unit { color: #e74c3c; }
   #hud .hud-lives { display: flex; gap: 5px; align-items: center; flex-direction: column; }
   #hud .hud-lives .lbl { font-size: 0.62rem; color: #a07840; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -258,7 +258,7 @@
   }
   #result-screen h2 {
     font-size: 1.9rem;
-    color: #f5c842;
+    color: #BB9750;
     text-shadow: 0 2px 10px rgba(245,200,66,0.4);
     line-height: 1.2;
   }
@@ -267,7 +267,7 @@
     font-size: 1rem;
     letter-spacing: 0.06em;
   }
-  #result-screen .result-score strong { color: #f5c842; font-size: 1.4rem; }
+  #result-screen .result-score strong { color: #BB9750; font-size: 1.4rem; }
   #result-screen .discount-box {
     background: linear-gradient(135deg, rgba(200,150,30,0.15), rgba(200,150,30,0.05));
     border: 1px solid rgba(245,200,66,0.3);
@@ -277,7 +277,7 @@
   }
   #result-screen .discount-pct {
     font-size: 3.5rem;
-    color: #f5c842;
+    color: #BB9750;
     line-height: 1;
     text-shadow: 0 4px 20px rgba(245,200,66,0.6);
   }
@@ -294,7 +294,7 @@
     border: 1px dashed rgba(245,200,66,0.5);
     border-radius: 8px;
     padding: 10px 20px;
-    color: #f5c842;
+    color: #BB9750;
     font-size: 1.2rem;
     letter-spacing: 0.15em;
   }
@@ -327,7 +327,7 @@
     z-index: 30;
     font-family: 'Optima', 'Segoe UI', sans-serif;
     font-size: 1.5rem;
-    color: #f5c842;
+    color: #BB9750;
     text-shadow: 0 2px 8px rgba(0,0,0,0.8);
     pointer-events: none;
     animation: floatUp 0.9s ease-out forwards;
@@ -368,34 +368,7 @@
 <body>
 <div id="game-container">
 
-  <!-- ── ANIMATED SNOW ── -->
-  <div class="snow" style="width:3px;height:3px;left:4%;animation-duration:7s;animation-delay:0s"></div>
-  <div class="snow" style="width:4px;height:4px;left:11%;animation-duration:9s;animation-delay:1.2s"></div>
-  <div class="snow" style="width:2px;height:2px;left:18%;animation-duration:6.5s;animation-delay:2.4s"></div>
-  <div class="snow" style="width:3px;height:3px;left:25%;animation-duration:8s;animation-delay:0.7s"></div>
-  <div class="snow" style="width:5px;height:5px;left:33%;animation-duration:7.5s;animation-delay:3.1s"></div>
-  <div class="snow" style="width:2px;height:2px;left:40%;animation-duration:10s;animation-delay:1.8s"></div>
-  <div class="snow" style="width:4px;height:4px;left:47%;animation-duration:6s;animation-delay:4.3s"></div>
-  <div class="snow" style="width:3px;height:3px;left:55%;animation-duration:8.5s;animation-delay:0.4s"></div>
-  <div class="snow" style="width:2px;height:2px;left:62%;animation-duration:11s;animation-delay:5.5s"></div>
-  <div class="snow" style="width:4px;height:4px;left:69%;animation-duration:7s;animation-delay:2.9s"></div>
-  <div class="snow" style="width:3px;height:3px;left:77%;animation-duration:9.5s;animation-delay:1.5s"></div>
-  <div class="snow" style="width:2px;height:2px;left:84%;animation-duration:8s;animation-delay:3.8s"></div>
-  <div class="snow" style="width:3px;height:3px;left:91%;animation-duration:7.2s;animation-delay:0.9s"></div>
-  <div class="snow" style="width:2px;height:2px;left:97%;animation-duration:6.8s;animation-delay:2.1s"></div>
-  <div class="snow" style="width:4px;height:4px;left:7%;animation-duration:10.5s;animation-delay:3.6s"></div>
-  <div class="snow" style="width:2px;height:2px;left:15%;animation-duration:8.3s;animation-delay:6.2s"></div>
-  <div class="snow" style="width:3px;height:3px;left:22%;animation-duration:7.8s;animation-delay:4.8s"></div>
-  <div class="snow" style="width:5px;height:5px;left:36%;animation-duration:9.2s;animation-delay:1.4s"></div>
-  <div class="snow" style="width:2px;height:2px;left:44%;animation-duration:6.3s;animation-delay:5.1s"></div>
-  <div class="snow" style="width:4px;height:4px;left:51%;animation-duration:11.5s;animation-delay:0.3s"></div>
-  <div class="snow" style="width:3px;height:3px;left:58%;animation-duration:7.1s;animation-delay:3.3s"></div>
-  <div class="snow" style="width:2px;height:2px;left:73%;animation-duration:9.8s;animation-delay:2.6s"></div>
-  <div class="snow" style="width:4px;height:4px;left:80%;animation-duration:6.6s;animation-delay:4.9s"></div>
-  <div class="snow" style="width:3px;height:3px;left:87%;animation-duration:8.9s;animation-delay:1.0s"></div>
-  <div class="snow" style="width:2px;height:2px;left:93%;animation-duration:7.4s;animation-delay:5.7s"></div>
-  <div class="snow" style="width:5px;height:5px;left:2%;animation-duration:10.2s;animation-delay:2.0s"></div>
-  <div class="snow" style="width:3px;height:3px;left:29%;animation-duration:8.6s;animation-delay:0.6s"></div>
+  <!-- ── ANIMATED SNOW (generowany w JS — gęsty) ── -->
 
   <!-- ── TWINKLING STARS ── -->
   <div class="star" style="width:3px;height:3px;background:#f5c842;top:9%;left:14%;animation-duration:2.3s;animation-delay:0s"></div>
@@ -417,48 +390,48 @@
     <path d="M330,50 C260,40 185,36 130,38 C90,40 55,41 22,44" fill="none" stroke="rgba(200,160,40,0.7)" stroke-width="1.8"/>
     <!-- Renifer 1 — Rudolph -->
     <g transform="translate(34,22) scale(-1,1)">
-      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#5a2a08"/>
-      <circle cx="13" cy="11" r="6" fill="#5a2a08"/>
-      <line x1="13" y1="6" x2="9" y2="-3" stroke="#5a2a08" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-8" stroke="#5a2a08" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#5a2a08" stroke-width="1.5"/>
-      <line x1="13" y1="6" x2="17" y2="-2" stroke="#5a2a08" stroke-width="1.8"/><line x1="17" y1="-2" x2="14" y2="-7" stroke="#5a2a08" stroke-width="1.5"/><line x1="17" y1="-2" x2="21" y2="-6" stroke="#5a2a08" stroke-width="1.5"/>
-      <line x1="-7" y1="24" x2="-11" y2="40" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="-2" y1="25" x2="-1" y2="41" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="4" y1="25" x2="7" y2="40" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="9" y1="24" x2="14" y2="38" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
+      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#f0f0f0"/>
+      <circle cx="13" cy="11" r="6" fill="#f0f0f0"/>
+      <line x1="13" y1="6" x2="9" y2="-3" stroke="#f0f0f0" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#f0f0f0" stroke-width="1.5"/>
+      <line x1="13" y1="6" x2="17" y2="-2" stroke="#f0f0f0" stroke-width="1.8"/><line x1="17" y1="-2" x2="14" y2="-7" stroke="#f0f0f0" stroke-width="1.5"/><line x1="17" y1="-2" x2="21" y2="-6" stroke="#f0f0f0" stroke-width="1.5"/>
+      <line x1="-7" y1="24" x2="-11" y2="40" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="-2" y1="25" x2="-1" y2="41" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="4" y1="25" x2="7" y2="40" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="9" y1="24" x2="14" y2="38" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
       <circle cx="20" cy="11" r="3.5" fill="#c0392b"/>
     </g>
     <!-- Renifer 2 -->
     <g transform="translate(108,20) scale(-1,1)">
-      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#5a2a08"/>
-      <circle cx="13" cy="11" r="6" fill="#5a2a08"/>
-      <line x1="13" y1="6" x2="9" y2="-3" stroke="#5a2a08" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-8" stroke="#5a2a08" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#5a2a08" stroke-width="1.5"/>
-      <line x1="13" y1="6" x2="17" y2="-2" stroke="#5a2a08" stroke-width="1.8"/><line x1="17" y1="-2" x2="14" y2="-8" stroke="#5a2a08" stroke-width="1.5"/><line x1="17" y1="-2" x2="21" y2="-6" stroke="#5a2a08" stroke-width="1.5"/>
-      <line x1="-7" y1="24" x2="-12" y2="39" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="-2" y1="25" x2="-2" y2="41" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="4" y1="25" x2="5" y2="40" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="9" y1="24" x2="13" y2="38" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
+      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#f0f0f0"/>
+      <circle cx="13" cy="11" r="6" fill="#f0f0f0"/>
+      <line x1="13" y1="6" x2="9" y2="-3" stroke="#f0f0f0" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#f0f0f0" stroke-width="1.5"/>
+      <line x1="13" y1="6" x2="17" y2="-2" stroke="#f0f0f0" stroke-width="1.8"/><line x1="17" y1="-2" x2="14" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="17" y1="-2" x2="21" y2="-6" stroke="#f0f0f0" stroke-width="1.5"/>
+      <line x1="-7" y1="24" x2="-12" y2="39" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="-2" y1="25" x2="-2" y2="41" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="4" y1="25" x2="5" y2="40" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="9" y1="24" x2="13" y2="38" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
     </g>
     <!-- Renifer 3 -->
     <g transform="translate(182,22) scale(-1,1)">
-      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#5a2a08"/>
-      <circle cx="13" cy="11" r="6" fill="#5a2a08"/>
-      <line x1="13" y1="6" x2="9" y2="-3" stroke="#5a2a08" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-9" stroke="#5a2a08" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#5a2a08" stroke-width="1.5"/>
-      <line x1="13" y1="6" x2="17" y2="-2" stroke="#5a2a08" stroke-width="1.8"/><line x1="17" y1="-2" x2="15" y2="-8" stroke="#5a2a08" stroke-width="1.5"/><line x1="17" y1="-2" x2="21" y2="-6" stroke="#5a2a08" stroke-width="1.5"/>
-      <line x1="-7" y1="24" x2="-11" y2="40" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="-2" y1="25" x2="-3" y2="41" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="4" y1="25" x2="4" y2="41" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="9" y1="24" x2="12" y2="39" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
+      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#f0f0f0"/>
+      <circle cx="13" cy="11" r="6" fill="#f0f0f0"/>
+      <line x1="13" y1="6" x2="9" y2="-3" stroke="#f0f0f0" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-9" stroke="#f0f0f0" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#f0f0f0" stroke-width="1.5"/>
+      <line x1="13" y1="6" x2="17" y2="-2" stroke="#f0f0f0" stroke-width="1.8"/><line x1="17" y1="-2" x2="15" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="17" y1="-2" x2="21" y2="-6" stroke="#f0f0f0" stroke-width="1.5"/>
+      <line x1="-7" y1="24" x2="-11" y2="40" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="-2" y1="25" x2="-3" y2="41" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="4" y1="25" x2="4" y2="41" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="9" y1="24" x2="12" y2="39" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
     </g>
     <!-- Renifer 4 -->
     <g transform="translate(256,24) scale(-1,1)">
-      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#5a2a08"/>
-      <circle cx="13" cy="11" r="6" fill="#5a2a08"/>
-      <line x1="13" y1="6" x2="9" y2="-3" stroke="#5a2a08" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-8" stroke="#5a2a08" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#5a2a08" stroke-width="1.5"/>
-      <line x1="13" y1="6" x2="17" y2="-2" stroke="#5a2a08" stroke-width="1.8"/><line x1="17" y1="-2" x2="15" y2="-8" stroke="#5a2a08" stroke-width="1.5"/><line x1="17" y1="-2" x2="22" y2="-6" stroke="#5a2a08" stroke-width="1.5"/>
-      <line x1="-7" y1="24" x2="-12" y2="38" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="-2" y1="25" x2="-3" y2="40" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="4" y1="25" x2="3" y2="41" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="9" y1="24" x2="12" y2="38" stroke="#5a2a08" stroke-width="2.2" stroke-linecap="round"/>
+      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#f0f0f0"/>
+      <circle cx="13" cy="11" r="6" fill="#f0f0f0"/>
+      <line x1="13" y1="6" x2="9" y2="-3" stroke="#f0f0f0" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#f0f0f0" stroke-width="1.5"/>
+      <line x1="13" y1="6" x2="17" y2="-2" stroke="#f0f0f0" stroke-width="1.8"/><line x1="17" y1="-2" x2="15" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="17" y1="-2" x2="22" y2="-6" stroke="#f0f0f0" stroke-width="1.5"/>
+      <line x1="-7" y1="24" x2="-12" y2="38" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="-2" y1="25" x2="-3" y2="40" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="4" y1="25" x2="3" y2="41" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="9" y1="24" x2="12" y2="38" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
     </g>
     <!-- Sanie -->
     <g transform="translate(300,14)">
@@ -470,7 +443,7 @@
       <path d="M24,19 Q55,14 84,19 L82,38 Q55,34 24,38Z" fill="#8b2020"/>
       <!-- Worek prezentów -->
       <ellipse cx="28" cy="12" rx="10" ry="12" fill="#3d1800"/>
-      <line x1="28" y1="1" x2="25" y2="-3" stroke="#5a2a08" stroke-width="2"/>
+      <line x1="28" y1="1" x2="25" y2="-3" stroke="#f0f0f0" stroke-width="2"/>
       <ellipse cx="28" cy="-2" rx="5" ry="3" fill="#3d1800"/>
       <!-- Mikołaj — ciało -->
       <ellipse cx="62" cy="24" rx="18" ry="16" fill="#8b1a1a"/>
@@ -489,21 +462,6 @@
       <!-- Ręka z lejcami -->
       <line x1="46" y1="20" x2="36" y2="14" stroke="#8b1a1a" stroke-width="5" stroke-linecap="round"/>
     </g>
-  </svg>
-
-  <!-- STATIC DECOR -->
-  <svg class="garland" viewBox="0 0 480 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" height="60">
-    <path d="M0,10 Q30,35 60,12 Q90,38 120,14 Q150,36 180,11 Q210,37 240,13 Q270,36 300,12 Q330,38 360,14 Q390,36 420,11 Q450,37 480,13" fill="none" stroke="#2d7a2d" stroke-width="5"/>
-    <path d="M0,10 Q30,35 60,12 Q90,38 120,14 Q150,36 180,11 Q210,37 240,13 Q270,36 300,12 Q330,38 360,14 Q390,36 420,11 Q450,37 480,13" fill="none" stroke="#3a9a3a" stroke-width="3"/>
-    <!-- ornaments -->
-    <circle cx="30" cy="30" r="6" fill="#c8961e"/><circle cx="30" cy="30" r="4" fill="#f5c842"/>
-    <circle cx="90" cy="32" r="6" fill="#8b1a1a"/><circle cx="90" cy="32" r="4" fill="#c0392b"/>
-    <circle cx="150" cy="30" r="6" fill="#c8961e"/><circle cx="150" cy="30" r="4" fill="#f5c842"/>
-    <circle cx="210" cy="32" r="6" fill="#8b1a1a"/><circle cx="210" cy="32" r="4" fill="#c0392b"/>
-    <circle cx="270" cy="30" r="6" fill="#2d5a8e"/><circle cx="270" cy="30" r="4" fill="#3d7abd"/>
-    <circle cx="330" cy="32" r="6" fill="#c8961e"/><circle cx="330" cy="32" r="4" fill="#f5c842"/>
-    <circle cx="390" cy="30" r="6" fill="#8b1a1a"/><circle cx="390" cy="30" r="4" fill="#c0392b"/>
-    <circle cx="450" cy="32" r="6" fill="#2d5a8e"/><circle cx="450" cy="32" r="4" fill="#3d7abd"/>
   </svg>
 
   <!-- ── FIREWORKS CANVAS ── -->
@@ -811,6 +769,21 @@ const canvas = document.getElementById('game-canvas')
 const ctx = canvas.getContext('2d')
 const container = document.getElementById('game-container')
 
+// ── gęsty śnieg (generowany) ──
+;(function makeSnow(){
+  const N = 90
+  for (let i = 0; i < N; i++){
+    const f = document.createElement('div')
+    f.className = 'snow'
+    const s = 2 + Math.random() * 4
+    f.style.width = s + 'px'; f.style.height = s + 'px'
+    f.style.left = (Math.random() * 100) + '%'
+    f.style.animationDuration = (5 + Math.random() * 7) + 's'
+    f.style.animationDelay = (-Math.random() * 8) + 's'
+    container.insertBefore(f, container.firstChild)
+  }
+})()
+
 // tylko pralinki LINDOR (7 starych + 5 nowych packshotów); bez misiów/królików/pudełek
 const ITEM_DEFS = [
   { src: 'ELEMENTY/Lindo-a.png', pts: 5, w: 1 },
@@ -842,7 +815,7 @@ function loadImages(cb) {
     basket.h = bw * (basketImg.naturalHeight / basketImg.naturalWidth)
     checkDone()
   }
-  basketImg.src = 'ELEMENTY/basket.png'
+  basketImg.src = 'ELEMENTY/koszyk.png'
 
   ITEM_DEFS.forEach(def => {
     const img = new Image()
@@ -871,6 +844,12 @@ function pickItemDef() {
 
 const GAME_TIME = 20   // czas rozgrywki w sekundach
 const HUD_H = 92       // wysokość czarnego paska HUD na dole (px)
+// tło background-red.jpg: biały blik na ~0.794 wysokości — koszyk siada na nim
+const BG_W = 1290, BG_H = 2796, BLIK_FRAC = 0.794
+function blikScreenY() {
+  const scale = Math.max(canvas.width / BG_W, canvas.height / BG_H)  // center/cover
+  return (canvas.height - BG_H * scale) / 2 + BLIK_FRAC * BG_H * scale
+}
 let score = 0
 let lives = 3
 let timeLeft = GAME_TIME
@@ -890,7 +869,9 @@ let spawnInterval = 950    // bazowy odstęp spawnu — krótszy = więcej spada
 function resize() {
   canvas.width = container.offsetWidth
   canvas.height = container.offsetHeight
-  basket.y = canvas.height - HUD_H - basket.h - 14   // nad czarnym paskiem HUD
+  // koszyk siada na białym bliku tła; nie niżej niż nad paskiem HUD
+  const onBlik = blikScreenY() - basket.h * 0.82
+  basket.y = Math.min(onBlik, canvas.height - HUD_H - basket.h - 8)
   basket.x = Math.min(Math.max(basket.x, 0), canvas.width - basket.w)
 }
 
@@ -898,7 +879,7 @@ function startGame() {
   score = 0; lives = 3; timeLeft = GAME_TIME
   items = []; basketContents = []
   tiltX = 0; rawTiltX = 0; touchX = null
-  spawnTimer = 0; spawnInterval = 950
+  spawnTimer = 0; spawnInterval = 1100
   basket.x = (canvas.width - basket.w) / 2
 
   updateHUD()
@@ -948,9 +929,16 @@ function spawnItem() {
     t: 0,
     swayPh: Math.random() * Math.PI * 2,        // faza kołysania
     swayFr: 0.0035 + Math.random() * 0.003,     // częstotliwość kołysania (na ms)
-    // prędkość: trochę szybciej (×1.38) + delikatne przyspieszanie z czasem
-    vy: (1.3 + Math.random() * 1.2 + (GAME_TIME - timeLeft) * 0.018) * 1.38,
+    vy: pralineSpeed(),
   })
+}
+// prędkość spadania: mocno zróżnicowana (wolne/szybkie) + rampa trudności (ostra od 12 s)
+function pralineSpeed() {
+  const el = GAME_TIME - timeLeft
+  const ramp = el < 12 ? el * 0.06 : 0.72 + (el - 12) * 0.24
+  const r = Math.random()
+  const variety = r * r * r * 6.5   // bias ku wolnym, rzadkie bardzo szybkie
+  return 1.1 + variety + ramp
 }
 
 function gameLoop(ts) {
@@ -973,7 +961,9 @@ function gameLoop(ts) {
   spawnTimer += dt
   if (spawnTimer >= spawnInterval) {
     spawnTimer = 0
-    spawnInterval = Math.max(430, spawnInterval - 12)   // dolny limit — jeszcze gęściej z czasem
+    const el = GAME_TIME - timeLeft
+    // gęstość: spokojnie na start, od 12 s bardzo gęsto
+    spawnInterval = Math.max(220, el < 12 ? 1100 - el * 40 : 620 - (el - 12) * 55)
     spawnItem()
   }
 
@@ -1309,7 +1299,7 @@ function fwLoop() {
 }
 
 function launchFireworkBurst() {
-  const count = 1 + Math.floor(Math.random() * 3)
+  const count = 2 + Math.floor(Math.random() * 4)
   for (let i = 0; i < count; i++) {
     setTimeout(() => {
       const x = fwCanvas.width * (0.12 + Math.random() * 0.76)
@@ -1321,7 +1311,7 @@ function launchFireworkBurst() {
 }
 
 function scheduleFireworks() {
-  const delay = 7000 + Math.random() * 8000
+  const delay = 2500 + Math.random() * 3500
   fwScheduleTimer = setTimeout(() => {
     launchFireworkBurst()
     scheduleFireworks()
