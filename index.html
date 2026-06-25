@@ -157,31 +157,23 @@
     margin-bottom: 32px;
   }
 
-  .floating-items {
+  /* karuzela pralinek 3D — krok z pauzą */
+  .carousel {
     position: relative;
     width: 260px;
-    height: 160px;
-    margin-bottom: 28px;
+    height: 230px;
+    margin-bottom: 24px;
   }
-  .floating-items img {
+  .carousel img {
     position: absolute;
-    width: 56px;
-    height: 56px;
+    left: 50%;
+    top: 46%;
+    width: 52px;
+    height: auto;
     object-fit: contain;
-    border-radius: 50%;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
-    animation: float 3s ease-in-out infinite;
-  }
-  .floating-items img:nth-child(1) { top: 20px; left: 10px; animation-delay: 0s; }
-  .floating-items img:nth-child(2) { top: 0;    left: 90px; animation-delay: 0.4s; width: 64px; height: 64px; }
-  .floating-items img:nth-child(3) { top: 20px; right: 10px; animation-delay: 0.8s; }
-  .floating-items img:nth-child(4) { bottom: 10px; left: 20px; animation-delay: 1.2s; }
-  .floating-items img:nth-child(5) { bottom: 0;  left: 100px; animation-delay: 0.6s; }
-  .floating-items img:nth-child(6) { bottom: 10px; right: 20px; animation-delay: 1.6s; }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0px) rotate(-3deg); }
-    50%       { transform: translateY(-12px) rotate(3deg); }
+    transform: translate(-50%, -50%);
+    transition: transform 0.55s cubic-bezier(.34,1.1,.4,1), filter 0.55s ease, opacity 0.55s ease;
+    will-change: transform, filter, opacity;
   }
 
   .btn-play {
@@ -560,13 +552,13 @@
     <h1>Gift<br>Catcher</h1>
     <div class="subtitle">Catch & Win</div>
 
-    <div class="floating-items">
-      <img src="ELEMENTY/Lindo-a.png" alt="">
-      <img src="ELEMENTY/Lindo-b.png" alt="">
-      <img src="ELEMENTY/Lindo-c.png" alt="">
+    <div class="carousel" id="carousel">
       <img src="ELEMENTY/MILK.png" alt="">
-      <img src="ELEMENTY/Lindo-d.png" alt="">
+      <img src="ELEMENTY/Lindo-a.png" alt="">
+      <img src="ELEMENTY/Extra Dark.png" alt="">
       <img src="ELEMENTY/MILK HAZELNUT.png" alt="">
+      <img src="ELEMENTY/Lindo-c.png" alt="">
+      <img src="ELEMENTY/MILK STRAWBERRY CREAM.png" alt="">
     </div>
 
     <button class="btn-play" onclick="onPlayPressed()">▶ Play &amp; Win</button>
@@ -782,6 +774,33 @@ const container = document.getElementById('game-container')
     f.style.animationDelay = (-Math.random() * 8) + 's'
     container.insertBefore(f, container.firstChild)
   }
+})()
+
+// ── karuzela pralinek na ekranie startowym (obrót skokowy z pauzą) ──
+;(function carousel(){
+  const car = document.getElementById('carousel')
+  if (!car) return
+  const imgs = [...car.querySelectorAll('img')]
+  const N = imgs.length
+  const Rx = 90, Ry = 48, TWO = Math.PI * 2
+  let base = 0
+  function layout(){
+    imgs.forEach((im, i) => {
+      const th = base + i * (TWO / N)
+      const d = Math.cos(th)             // 1 = front (najbliżej), -1 = tył
+      const t = (d + 1) / 2              // 0..1
+      const scale = 0.5 + t * 0.78       // tył ~0.5 .. front ~1.28
+      const blur = (1 - t) * 4           // front 0 .. tył 4px
+      const x = Math.sin(th) * Rx
+      const y = d * Ry                   // front niżej (bliżej nas)
+      im.style.transform = `translate(-50%,-50%) translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${scale.toFixed(3)})`
+      im.style.filter = `blur(${blur.toFixed(2)}px) drop-shadow(0 6px 8px rgba(0,0,0,0.45))`
+      im.style.opacity = (0.4 + t * 0.6).toFixed(2)
+      im.style.zIndex = Math.round(t * 100)
+    })
+  }
+  layout()
+  setInterval(() => { base += TWO / N; layout() }, 1500)   // skok co 1.5s; przejście 0.55s, potem pauza
 })()
 
 // tylko pralinki LINDOR (7 starych + 5 nowych packshotów); bez misiów/królików/pudełek
