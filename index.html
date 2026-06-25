@@ -160,19 +160,20 @@
   /* karuzela pralinek 3D — krok z pauzą */
   .carousel {
     position: relative;
-    width: 260px;
-    height: 230px;
-    margin-bottom: 24px;
+    width: 300px;
+    height: 200px;
+    margin-bottom: 20px;
   }
   .carousel img {
     position: absolute;
     left: 50%;
-    top: 46%;
-    width: 52px;
+    top: 40%;
+    width: 60px;
     height: auto;
     object-fit: contain;
     transform: translate(-50%, -50%);
-    transition: transform 0.55s cubic-bezier(.34,1.1,.4,1), filter 0.55s ease, opacity 0.55s ease;
+    -webkit-box-reflect: below 1px linear-gradient(to bottom, transparent 45%, rgba(255,255,255,0.28));
+    transition: transform 0.8s cubic-bezier(.4,0,.2,1), filter 0.8s ease, opacity 0.8s ease;
     will-change: transform, filter, opacity;
   }
 
@@ -782,25 +783,26 @@ const container = document.getElementById('game-container')
   if (!car) return
   const imgs = [...car.querySelectorAll('img')]
   const N = imgs.length
-  const Rx = 90, Ry = 48, TWO = Math.PI * 2
+  const Rx = 108, TWO = Math.PI * 2
   let base = 0
   function layout(){
     imgs.forEach((im, i) => {
       const th = base + i * (TWO / N)
-      const d = Math.cos(th)             // 1 = front (najbliżej), -1 = tył
-      const t = (d + 1) / 2              // 0..1
-      const scale = 0.5 + t * 0.78       // tył ~0.5 .. front ~1.28
-      const blur = (1 - t) * 4           // front 0 .. tył 4px
-      const x = Math.sin(th) * Rx
-      const y = d * Ry                   // front niżej (bliżej nas)
+      const d = Math.cos(th)                       // 1 = front (środek, najbliżej), -1 = tył
+      const t = (d + 1) / 2                         // 0..1
+      const xr = Rx * (0.5 + 0.5 * t)              // tylne wciśnięte bliżej środka (peek)
+      const x = Math.sin(th) * xr
+      const y = -(1 - t) * 6                        // tylne odrobinę wyżej
+      const scale = 0.4 + t * 0.95                 // tył ~0.4 .. front ~1.35
+      const blur = Math.pow(1 - t, 1.25) * 9       // front 0 .. tył ~9px (mocno rozmyte z tyłu)
       im.style.transform = `translate(-50%,-50%) translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${scale.toFixed(3)})`
-      im.style.filter = `blur(${blur.toFixed(2)}px) drop-shadow(0 6px 8px rgba(0,0,0,0.45))`
-      im.style.opacity = (0.4 + t * 0.6).toFixed(2)
-      im.style.zIndex = Math.round(t * 100)
+      im.style.filter = `blur(${blur.toFixed(2)}px) drop-shadow(0 5px 7px rgba(0,0,0,0.45))`
+      im.style.opacity = (0.3 + t * 0.7).toFixed(2)
+      im.style.zIndex = Math.round(t * 1000)
     })
   }
   layout()
-  setInterval(() => { base += TWO / N; layout() }, 1500)   // skok co 1.5s; przejście 0.55s, potem pauza
+  setInterval(() => { base += TWO / N; layout() }, 2600)   // wolniej: skok co 2.6s; przejście 0.8s, potem pauza
 })()
 
 // tylko pralinki LINDOR (7 starych + 5 nowych packshotów); bez misiów/królików/pudełek
