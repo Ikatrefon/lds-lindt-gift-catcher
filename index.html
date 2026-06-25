@@ -844,11 +844,23 @@ function pickItemDef() {
 
 const GAME_TIME = 20   // czas rozgrywki w sekundach
 const HUD_H = 92       // wysokość czarnego paska HUD na dole (px)
-// tło background-red.jpg: biały blik (smuga) na ~0.771–0.816 wysokości — koszyk stoi na jego górnej krawędzi
-const BG_W = 1290, BG_H = 2796, BLIK_TOP = 0.773
-function blikScreenY(frac) {
-  const scale = Math.max(canvas.width / BG_W, canvas.height / BG_H)  // center/cover
-  return (canvas.height - BG_H * scale) / 2 + frac * BG_H * scale
+// BLIK rysowany w kodzie (osobna warstwa na canvasie) — w pełni przesuwalny:
+let BLIK_FRAC = 0.80          // pozycja środka blika jako ułamek wysokości ekranu (PRZESUWALNE góra/dół)
+const BLIK_WHALF = 0.48       // pół-szerokość smugi (ułamek szerokości)
+const BLIK_HHALF = 0.024      // pół-wysokość smugi (ułamek wysokości)
+function blikY() { return BLIK_FRAC * canvas.height }
+function drawBlik() {
+  const y = blikY(), cx = canvas.width / 2
+  const hw = canvas.width * BLIK_WHALF, hh = Math.max(10, canvas.height * BLIK_HHALF)
+  ctx.save()
+  ctx.translate(cx, y); ctx.scale(hw, hh)
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1)
+  g.addColorStop(0,    'rgba(255,250,235,0.70)')
+  g.addColorStop(0.45, 'rgba(255,240,210,0.24)')
+  g.addColorStop(1,    'rgba(255,255,255,0)')
+  ctx.fillStyle = g
+  ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill()
+  ctx.restore()
 }
 let score = 0
 let lives = 3
@@ -869,8 +881,8 @@ let spawnInterval = 950    // bazowy odstęp spawnu — krótszy = więcej spada
 function resize() {
   canvas.width = container.offsetWidth
   canvas.height = container.offsetHeight
-  // dno koszyka na górnej krawędzi blika (mała zakładka), żeby cała smuga była widoczna pod nim
-  const onBlik = blikScreenY(BLIK_TOP) - basket.h + 8
+  // dno koszyka na linii blika (mała zakładka), smuga widoczna pod nim; nie niżej niż nad paskiem HUD
+  const onBlik = blikY() - basket.h + 10
   basket.y = Math.min(onBlik, canvas.height - HUD_H - basket.h - 8)
   basket.x = Math.min(Math.max(basket.x, 0), canvas.width - basket.w)
 }
@@ -1004,6 +1016,7 @@ function gameLoop(ts) {
 
   // Draw
   ctx.clearRect(0, 0, canvas.width, canvas.height)
+  drawBlik()
   drawItems()
   drawBasket()
 
