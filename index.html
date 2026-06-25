@@ -844,11 +844,11 @@ function pickItemDef() {
 
 const GAME_TIME = 20   // czas rozgrywki w sekundach
 const HUD_H = 92       // wysokość czarnego paska HUD na dole (px)
-// tło background-red.jpg: biały blik na ~0.794 wysokości — koszyk siada na nim
-const BG_W = 1290, BG_H = 2796, BLIK_FRAC = 0.794
-function blikScreenY() {
+// tło background-red.jpg: biały blik (smuga) na ~0.771–0.816 wysokości — koszyk stoi na jego górnej krawędzi
+const BG_W = 1290, BG_H = 2796, BLIK_TOP = 0.773
+function blikScreenY(frac) {
   const scale = Math.max(canvas.width / BG_W, canvas.height / BG_H)  // center/cover
-  return (canvas.height - BG_H * scale) / 2 + BLIK_FRAC * BG_H * scale
+  return (canvas.height - BG_H * scale) / 2 + frac * BG_H * scale
 }
 let score = 0
 let lives = 3
@@ -869,8 +869,8 @@ let spawnInterval = 950    // bazowy odstęp spawnu — krótszy = więcej spada
 function resize() {
   canvas.width = container.offsetWidth
   canvas.height = container.offsetHeight
-  // koszyk siada na białym bliku tła; nie niżej niż nad paskiem HUD
-  const onBlik = blikScreenY() - basket.h * 0.82
+  // dno koszyka na górnej krawędzi blika (mała zakładka), żeby cała smuga była widoczna pod nim
+  const onBlik = blikScreenY(BLIK_TOP) - basket.h + 8
   basket.y = Math.min(onBlik, canvas.height - HUD_H - basket.h - 8)
   basket.x = Math.min(Math.max(basket.x, 0), canvas.width - basket.w)
 }
