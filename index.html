@@ -160,21 +160,31 @@
   /* karuzela pralinek 3D — krok z pauzą */
   .carousel {
     position: relative;
-    width: 300px;
-    height: 200px;
-    margin-bottom: 20px;
+    width: 280px;
+    height: 175px;
+    margin-bottom: 18px;
   }
-  .carousel img {
+  /* .slot = pozycja w karuzeli (krok z transition); img = ciągły flow */
+  .carousel .slot {
     position: absolute;
     left: 50%;
-    top: 40%;
-    width: 60px;
-    height: auto;
-    object-fit: contain;
+    top: 42%;
     transform: translate(-50%, -50%);
-    -webkit-box-reflect: below 1px linear-gradient(to bottom, transparent 45%, rgba(255,255,255,0.28));
     transition: transform 0.8s cubic-bezier(.4,0,.2,1), filter 0.8s ease, opacity 0.8s ease;
     will-change: transform, filter, opacity;
+  }
+  .carousel .slot img {
+    display: block;
+    width: 52px;
+    height: auto;
+    object-fit: contain;
+    transform-origin: center center;
+    -webkit-box-reflect: below 1px linear-gradient(to bottom, transparent 45%, rgba(255,255,255,0.28));
+    animation: praflow 3.6s ease-in-out infinite;
+  }
+  @keyframes praflow {
+    0%, 100% { transform: translateY(2px) rotate(-5deg); }
+    50%      { transform: translateY(-4px) rotate(5deg); }
   }
 
   .btn-play {
@@ -554,12 +564,12 @@
     <div class="subtitle">Catch & Win</div>
 
     <div class="carousel" id="carousel">
-      <img src="ELEMENTY/MILK.png" alt="">
-      <img src="ELEMENTY/Lindo-a.png" alt="">
-      <img src="ELEMENTY/Extra Dark.png" alt="">
-      <img src="ELEMENTY/MILK HAZELNUT.png" alt="">
-      <img src="ELEMENTY/Lindo-c.png" alt="">
-      <img src="ELEMENTY/MILK STRAWBERRY CREAM.png" alt="">
+      <div class="slot"><img src="ELEMENTY/MILK.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/Lindo-a.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/Extra Dark.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/MILK HAZELNUT.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/Lindo-c.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/MILK STRAWBERRY CREAM.png" alt=""></div>
     </div>
 
     <button class="btn-play" onclick="onPlayPressed()">▶ Play &amp; Win</button>
@@ -781,24 +791,26 @@ const container = document.getElementById('game-container')
 ;(function carousel(){
   const car = document.getElementById('carousel')
   if (!car) return
-  const imgs = [...car.querySelectorAll('img')]
-  const N = imgs.length
-  const Rx = 108, TWO = Math.PI * 2
+  const slots = [...car.querySelectorAll('.slot')]
+  const N = slots.length
+  const Rx = 80, TWO = Math.PI * 2
+  // desync flow każdej pralinki
+  slots.forEach(s => { const im = s.querySelector('img'); im.style.animationDelay = (-Math.random() * 3.6).toFixed(2) + 's' })
   let base = 0
   function layout(){
-    imgs.forEach((im, i) => {
+    slots.forEach((s, i) => {
       const th = base + i * (TWO / N)
       const d = Math.cos(th)                       // 1 = front (środek, najbliżej), -1 = tył
       const t = (d + 1) / 2                         // 0..1
-      const xr = Rx * (0.5 + 0.5 * t)              // tylne wciśnięte bliżej środka (peek)
+      const xr = Rx * (1.12 - 0.12 * t)            // tylne nieco DALEJ od środka
       const x = Math.sin(th) * xr
-      const y = -(1 - t) * 6                        // tylne odrobinę wyżej
-      const scale = 0.4 + t * 0.95                 // tył ~0.4 .. front ~1.35
-      const blur = Math.pow(1 - t, 1.25) * 9       // front 0 .. tył ~9px (mocno rozmyte z tyłu)
-      im.style.transform = `translate(-50%,-50%) translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${scale.toFixed(3)})`
-      im.style.filter = `blur(${blur.toFixed(2)}px) drop-shadow(0 5px 7px rgba(0,0,0,0.45))`
-      im.style.opacity = (0.3 + t * 0.7).toFixed(2)
-      im.style.zIndex = Math.round(t * 1000)
+      const y = -(1 - t) * 5                        // tylne odrobinę wyżej
+      const scale = 0.3 + t * 0.92                 // tył ~0.3 (mniejsze) .. front ~1.22
+      const blur = Math.pow(1 - t, 1.25) * 8.5     // front 0 .. tył ~8.5px
+      s.style.transform = `translate(-50%,-50%) translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${scale.toFixed(3)})`
+      s.style.filter = `blur(${blur.toFixed(2)}px) drop-shadow(0 5px 7px rgba(0,0,0,0.45))`
+      s.style.opacity = (0.3 + t * 0.7).toFixed(2)
+      s.style.zIndex = Math.round(t * 1000)
     })
   }
   layout()
