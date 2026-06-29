@@ -685,15 +685,33 @@ function beep(freq, dur, type = 'sine', vol = 0.18) {
   } catch(e) {}
 }
 
-// ── Master music gain (centralna głośność świątecznego podkładu) ──
+// ── Bus muzyczny: musicGain → lowpass → (dry + pogłos) → wyjście ──
+// Pogłos + lowpass + addytywne sinusy = cieplej, „mniej 8-bit".
 let musicGain = null
+function makeImpulse(ctx, seconds, decay) {
+  const rate = ctx.sampleRate, len = Math.floor(rate * seconds)
+  const buf = ctx.createBuffer(2, len, rate)
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c)
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay)
+  }
+  return buf
+}
 function getMusicGain() {
   const ctx = getAudioCtx()
-  if (!musicGain) { musicGain = ctx.createGain(); musicGain.gain.value = 0.8; musicGain.connect(ctx.destination) }
+  if (!musicGain) {
+    musicGain = ctx.createGain(); musicGain.gain.value = 0.42        // ciszej
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 6500; lp.Q.value = 0.2
+    musicGain.connect(lp)
+    const dry = ctx.createGain(); dry.gain.value = 0.9; lp.connect(dry); dry.connect(ctx.destination)
+    const conv = ctx.createConvolver(); conv.buffer = makeImpulse(ctx, 1.8, 2.6)   // miękki pogłos = przestrzeń, mniej sucho
+    const wet = ctx.createGain(); wet.gain.value = 0.22
+    lp.connect(conv); conv.connect(wet); wet.connect(ctx.destination)
+  }
   return musicGain
 }
 
-// ── Sleigh bells (świąteczna magia): filtrowany szum + metaliczne partiale ──
+// ── Sleigh bells: filtrowany szum + miękkie sinusowe partiale (bez square = mniej 8-bit) ──
 let _noiseBuf = null
 function noiseBuffer(ctx) {
   if (_noiseBuf) return _noiseBuf
@@ -707,18 +725,18 @@ function sleighBell(accent) {
   try {
     const ctx = getAudioCtx(), now = ctx.currentTime, out = getMusicGain()
     const src = ctx.createBufferSource(); src.buffer = noiseBuffer(ctx)
-    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = accent ? 5400 : 4300; bp.Q.value = 0.7
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = accent ? 5000 : 4000; bp.Q.value = 0.9
     const g = ctx.createGain()
-    const v = accent ? 0.085 : 0.045, decay = accent ? 0.17 : 0.10
+    const v = accent ? 0.06 : 0.032, decay = accent ? 0.16 : 0.10
     g.gain.setValueAtTime(0.0001, now)
     g.gain.linearRampToValueAtTime(v, now + 0.004)
     g.gain.exponentialRampToValueAtTime(0.001, now + decay)
     src.connect(bp); bp.connect(g); g.connect(out)
     src.start(now); src.stop(now + 0.25)
-    ;[3300, 4900, 6500].forEach((f, i) => {       // metaliczny połysk dzwonków
+    ;[3300, 4900, 6500].forEach((f, i) => {       // miękki, dzwoneczkowy połysk (sinus)
       const o = ctx.createOscillator(), og = ctx.createGain()
-      o.type = 'square'; o.frequency.value = f * (0.99 + Math.random() * 0.02)
-      og.gain.setValueAtTime((accent ? 0.010 : 0.005) / (i + 1), now)
+      o.type = 'sine'; o.frequency.value = f * (0.99 + Math.random() * 0.02)
+      og.gain.setValueAtTime((accent ? 0.009 : 0.005) / (i + 1), now)
       og.gain.exponentialRampToValueAtTime(0.0006, now + decay * 0.9)
       o.connect(og); og.connect(out); o.start(now); o.stop(now + decay)
     })
@@ -727,6 +745,7 @@ function sleighBell(accent) {
 
 // ── Ciepły bas (bujanie pod melodią) ──
 function bassNote(freq, durMs) {
+  if (freq <= 0) return
   try {
     const ctx = getAudioCtx(), now = ctx.currentTime, out = getMusicGain()
     const dur = durMs / 1000 * 0.95
@@ -734,65 +753,41 @@ function bassNote(freq, durMs) {
     o.type = 'triangle'; o.frequency.value = freq
     o2.type = 'sine'; o2.frequency.value = freq
     g.gain.setValueAtTime(0.0001, now)
-    g.gain.linearRampToValueAtTime(0.13, now + 0.02)
+    g.gain.linearRampToValueAtTime(0.11, now + 0.03)
     g.gain.exponentialRampToValueAtTime(0.001, now + dur)
     o.connect(g); o2.connect(g); g.connect(out)
     o.start(now); o.stop(now + dur); o2.start(now); o2.stop(now + dur)
   } catch(e) {}
 }
 
-// Richer melody note: triangle (ciepło) + jasny dzwonek (glockenspiel) + sub + połysk
+// Melodia: addytywne sinusy (celesta/pozytywka) — ciepło, miękki atak, bez square/triangle ostrości
 function playMelodyNote(freq, durMs) {
+  if (freq <= 0) return   // pauza
   try {
     const actx = getAudioCtx()
     const now = actx.currentTime
     const out = getMusicGain()
-    const dur = durMs / 1000 * 0.88
+    const dur = durMs / 1000 * 0.92
 
-    // Triangle — warm, bell-like
-    const osc = actx.createOscillator()
-    const gain = actx.createGain()
-    osc.type = 'triangle'
-    osc.frequency.value = freq
-    osc.connect(gain); gain.connect(out)
-    gain.gain.setValueAtTime(0.0001, now)
-    gain.gain.linearRampToValueAtTime(0.14, now + 0.010)
-    gain.gain.setValueAtTime(0.14, now + dur * 0.4)
-    gain.gain.exponentialRampToValueAtTime(0.001, now + dur)
-    osc.start(now); osc.stop(now + dur)
+    // partiale (harmoniczne): podstawa + oktawa + kwinta+oktawa + lekka 4-ta harmoniczna
+    const parts = [[1, 0.13, 1.0], [2, 0.055, 0.7], [3, 0.022, 0.5], [4, 0.010, 0.4]]
+    parts.forEach(([mul, amp, decFrac]) => {
+      const o = actx.createOscillator(), g = actx.createGain()
+      o.type = 'sine'; o.frequency.value = freq * mul
+      o.connect(g); g.connect(out)
+      g.gain.setValueAtTime(0.0001, now)
+      g.gain.linearRampToValueAtTime(amp, now + 0.012)            // miękki atak
+      g.gain.exponentialRampToValueAtTime(0.0008, now + dur * decFrac)
+      o.start(now); o.stop(now + dur * decFrac + 0.05)
+    })
 
-    // Jasny „ding" oktawę wyżej — świąteczna iskra (glockenspiel)
-    const bell = actx.createOscillator()
-    const bellG = actx.createGain()
-    bell.type = 'sine'
-    bell.frequency.value = freq * 2
-    bell.connect(bellG); bellG.connect(out)
-    const bdur = Math.min(dur, 0.6)
-    bellG.gain.setValueAtTime(0.07, now)
-    bellG.gain.exponentialRampToValueAtTime(0.001, now + bdur)
-    bell.start(now); bell.stop(now + bdur + 0.02)
-
-    // Sub octave sine — adds warmth
-    const sub = actx.createOscillator()
-    const subG = actx.createGain()
-    sub.type = 'sine'
-    sub.frequency.value = freq / 2
+    // sub-oktawa — ciepło/pełnia
+    const sub = actx.createOscillator(), subG = actx.createGain()
+    sub.type = 'sine'; sub.frequency.value = freq / 2
     sub.connect(subG); subG.connect(out)
-    subG.gain.setValueAtTime(0.04, now)
+    subG.gain.setValueAtTime(0.035, now)
     subG.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.55)
     sub.start(now); sub.stop(now + dur * 0.6)
-
-    // Połysk — oktawa+kwinta na dłuższych nutach
-    if (durMs > 200) {
-      const fifth = actx.createOscillator()
-      const fifthG = actx.createGain()
-      fifth.type = 'sine'
-      fifth.frequency.value = freq * 3
-      fifth.connect(fifthG); fifthG.connect(out)
-      fifthG.gain.setValueAtTime(0.02, now)
-      fifthG.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.45)
-      fifth.start(now); fifth.stop(now + dur * 0.5)
-    }
   } catch(e) {}
 }
 
@@ -813,33 +808,32 @@ function playGameOver() {
   setTimeout(() => beep(247, 0.45, 'sawtooth', 0.12), 380)
 }
 
-// ── Carol of the Bells — A minor, ~160 BPM ──
-// q=375ms  e=188ms  h=750ms
-// A4=440 B4=494 C5=523 D4=294 E4=330 F4=349 G4=392 A3=220 B3=247
+// ── Jingle Bells (parafraza, C-dur, skoczne ~185 BPM) — [freq,ms], freq=0 = pauza ──
+// C4=262 D4=294 E4=330 F4=349 G4=392 A4=440 B4=494 C5=523
 const CAROL = [
-  // ═ Section A — "Carol of the bells" motif (×2) ═
-  [440,300],[440,150],[440,150],[392,560],   // A A A G
-  [440,300],[440,150],[440,150],[392,560],   // A A A G
-  [440,150],[494,150],[523,300],[494,150],[440,150],[392,300],[330,560], // A B C B A G E
-  [330,840],
-
-  // ═ Section B — F variation ═
-  [349,300],[349,150],[349,150],[330,560],
-  [349,300],[349,150],[349,150],[330,560],
-  [349,150],[392,150],[440,300],[392,150],[349,150],[330,300],[294,560],
-  [294,840],
-
-  // ═ Section C — E minor ("Ding dong ding dong") ═
-  [330,300],[330,300],[330,150],[349,150],[330,150],[294,450],
-  [262,560],[262,280],
-  [294,300],[294,300],[294,150],[330,150],[294,150],[262,450],
-  [247,560],[247,280],
-
-  // ═ Section D — fast descending rush (climax!) ═
-  [523,150],[494,150],[440,150],[392,150],[330,300],[330,300],
-  [294,150],[330,150],[349,150],[330,150],[294,300],[294,300],
-  [523,150],[494,150],[440,150],[392,150],[330,300],[330,300],
-  [294,150],[330,150],[349,150],[440,150],[392,560],
+  // Jingle bells, jingle bells,
+  [330,320],[330,320],[330,620],
+  [330,320],[330,320],[330,620],
+  // jingle all the way
+  [330,320],[392,320],[262,480],[294,160],[330,760],
+  // Oh what fun it is to ride
+  [349,320],[349,320],[349,320],[349,160],[349,160],
+  [349,320],[330,320],[330,320],[330,160],[330,160],
+  // in a one horse open sleigh
+  [330,320],[294,320],[294,320],[330,320],
+  [294,620],[392,620],
+  [0,260],
+  // Jingle bells, jingle bells, (powtórka)
+  [330,320],[330,320],[330,620],
+  [330,320],[330,320],[330,620],
+  // jingle all the way
+  [330,320],[392,320],[262,480],[294,160],[330,760],
+  // Oh what fun it is to ride
+  [349,320],[349,320],[349,320],[349,160],[349,160],
+  [349,320],[330,320],[330,320],[330,160],[330,160],
+  // one horse open sleigh — zakończenie G G F D C
+  [392,320],[392,320],[349,320],[294,320],[262,900],
+  [0,360],
 ]
 
 let musicInterval = null
@@ -877,6 +871,17 @@ function stopMusic() {
   if (musicInterval) { clearTimeout(musicInterval); musicInterval = null }
   if (sleighInterval) { clearInterval(sleighInterval); sleighInterval = null }
 }
+
+// Muzyka już od ekranu startowego — odpal przy PIERWSZYM geście (mobile wymaga gestu do audio)
+let _musicKicked = false
+function kickMusic() {
+  if (_musicKicked) return
+  _musicKicked = true
+  try { getAudioCtx().resume() } catch(e) {}
+  startMusic()
+}
+window.addEventListener('pointerdown', kickMusic, { passive: true })
+window.addEventListener('touchstart', kickMusic, { passive: true })
 
 // ──────────────────────────────────────────────
 // GAME STATE
@@ -1284,7 +1289,7 @@ function showCatchLabel(text, x, y) {
 
 function endGame() {
   gameRunning = false
-  stopMusic()
+  // muzyka gra dalej (start screen → gra → ekran wyniku); nie zatrzymujemy
   clearInterval(timerInterval)
   playGameOver()
   releaseWakeLock()
