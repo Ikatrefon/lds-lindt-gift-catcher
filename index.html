@@ -685,11 +685,68 @@ function beep(freq, dur, type = 'sine', vol = 0.18) {
   } catch(e) {}
 }
 
-// Richer melody note: triangle (warm/bell) + sub sine for depth
+// ── Master music gain (centralna głośność świątecznego podkładu) ──
+let musicGain = null
+function getMusicGain() {
+  const ctx = getAudioCtx()
+  if (!musicGain) { musicGain = ctx.createGain(); musicGain.gain.value = 0.8; musicGain.connect(ctx.destination) }
+  return musicGain
+}
+
+// ── Sleigh bells (świąteczna magia): filtrowany szum + metaliczne partiale ──
+let _noiseBuf = null
+function noiseBuffer(ctx) {
+  if (_noiseBuf) return _noiseBuf
+  const len = Math.floor(ctx.sampleRate * 0.25)
+  const b = ctx.createBuffer(1, len, ctx.sampleRate)
+  const d = b.getChannelData(0)
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1
+  _noiseBuf = b; return b
+}
+function sleighBell(accent) {
+  try {
+    const ctx = getAudioCtx(), now = ctx.currentTime, out = getMusicGain()
+    const src = ctx.createBufferSource(); src.buffer = noiseBuffer(ctx)
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = accent ? 5400 : 4300; bp.Q.value = 0.7
+    const g = ctx.createGain()
+    const v = accent ? 0.085 : 0.045, decay = accent ? 0.17 : 0.10
+    g.gain.setValueAtTime(0.0001, now)
+    g.gain.linearRampToValueAtTime(v, now + 0.004)
+    g.gain.exponentialRampToValueAtTime(0.001, now + decay)
+    src.connect(bp); bp.connect(g); g.connect(out)
+    src.start(now); src.stop(now + 0.25)
+    ;[3300, 4900, 6500].forEach((f, i) => {       // metaliczny połysk dzwonków
+      const o = ctx.createOscillator(), og = ctx.createGain()
+      o.type = 'square'; o.frequency.value = f * (0.99 + Math.random() * 0.02)
+      og.gain.setValueAtTime((accent ? 0.010 : 0.005) / (i + 1), now)
+      og.gain.exponentialRampToValueAtTime(0.0006, now + decay * 0.9)
+      o.connect(og); og.connect(out); o.start(now); o.stop(now + decay)
+    })
+  } catch(e) {}
+}
+
+// ── Ciepły bas (bujanie pod melodią) ──
+function bassNote(freq, durMs) {
+  try {
+    const ctx = getAudioCtx(), now = ctx.currentTime, out = getMusicGain()
+    const dur = durMs / 1000 * 0.95
+    const o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain()
+    o.type = 'triangle'; o.frequency.value = freq
+    o2.type = 'sine'; o2.frequency.value = freq
+    g.gain.setValueAtTime(0.0001, now)
+    g.gain.linearRampToValueAtTime(0.13, now + 0.02)
+    g.gain.exponentialRampToValueAtTime(0.001, now + dur)
+    o.connect(g); o2.connect(g); g.connect(out)
+    o.start(now); o.stop(now + dur); o2.start(now); o2.stop(now + dur)
+  } catch(e) {}
+}
+
+// Richer melody note: triangle (ciepło) + jasny dzwonek (glockenspiel) + sub + połysk
 function playMelodyNote(freq, durMs) {
   try {
     const actx = getAudioCtx()
     const now = actx.currentTime
+    const out = getMusicGain()
     const dur = durMs / 1000 * 0.88
 
     // Triangle — warm, bell-like
@@ -697,31 +754,42 @@ function playMelodyNote(freq, durMs) {
     const gain = actx.createGain()
     osc.type = 'triangle'
     osc.frequency.value = freq
-    osc.connect(gain); gain.connect(actx.destination)
+    osc.connect(gain); gain.connect(out)
     gain.gain.setValueAtTime(0.0001, now)
-    gain.gain.linearRampToValueAtTime(0.15, now + 0.012)
-    gain.gain.setValueAtTime(0.15, now + dur * 0.4)
+    gain.gain.linearRampToValueAtTime(0.14, now + 0.010)
+    gain.gain.setValueAtTime(0.14, now + dur * 0.4)
     gain.gain.exponentialRampToValueAtTime(0.001, now + dur)
     osc.start(now); osc.stop(now + dur)
+
+    // Jasny „ding" oktawę wyżej — świąteczna iskra (glockenspiel)
+    const bell = actx.createOscillator()
+    const bellG = actx.createGain()
+    bell.type = 'sine'
+    bell.frequency.value = freq * 2
+    bell.connect(bellG); bellG.connect(out)
+    const bdur = Math.min(dur, 0.6)
+    bellG.gain.setValueAtTime(0.07, now)
+    bellG.gain.exponentialRampToValueAtTime(0.001, now + bdur)
+    bell.start(now); bell.stop(now + bdur + 0.02)
 
     // Sub octave sine — adds warmth
     const sub = actx.createOscillator()
     const subG = actx.createGain()
     sub.type = 'sine'
     sub.frequency.value = freq / 2
-    sub.connect(subG); subG.connect(actx.destination)
+    sub.connect(subG); subG.connect(out)
     subG.gain.setValueAtTime(0.04, now)
     subG.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.55)
     sub.start(now); sub.stop(now + dur * 0.6)
 
-    // Shimmer: slight detune fifth — adds richness on longer notes
+    // Połysk — oktawa+kwinta na dłuższych nutach
     if (durMs > 200) {
       const fifth = actx.createOscillator()
       const fifthG = actx.createGain()
       fifth.type = 'sine'
-      fifth.frequency.value = freq * 1.5
-      fifth.connect(fifthG); fifthG.connect(actx.destination)
-      fifthG.gain.setValueAtTime(0.025, now)
+      fifth.frequency.value = freq * 3
+      fifth.connect(fifthG); fifthG.connect(out)
+      fifthG.gain.setValueAtTime(0.02, now)
       fifthG.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.45)
       fifth.start(now); fifth.stop(now + dur * 0.5)
     }
@@ -775,11 +843,13 @@ const CAROL = [
 ]
 
 let musicInterval = null
+let sleighInterval = null
 let melodyIdx = 0
 
 function playMusicNote() {
   const [freq, dur] = CAROL[melodyIdx % CAROL.length]
   playMelodyNote(freq, dur)
+  if (dur >= 280) bassNote(freq / 2, Math.min(dur, 520))   // bas na nutach strukturalnych = świąteczne bujanie
   melodyIdx++
 }
 
@@ -797,10 +867,15 @@ function startMusic() {
     }, dur)
   }
   schedule()
+  // Stały szelest dzwoneczków sań (ósemkowy puls, akcent co drugi)
+  let shake = 0
+  sleighBell(true)
+  sleighInterval = setInterval(() => { shake++; sleighBell(shake % 2 === 0) }, 188)
 }
 
 function stopMusic() {
   if (musicInterval) { clearTimeout(musicInterval); musicInterval = null }
+  if (sleighInterval) { clearInterval(sleighInterval); sleighInterval = null }
 }
 
 // ──────────────────────────────────────────────
