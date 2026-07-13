@@ -131,6 +131,9 @@
     z-index: 3;
     pointer-events: none;
     opacity: 0;
+    width: 300px;
+    height: auto;
+    top: 8%;
     transform: translateX(115vw);
     filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7));
   }
@@ -282,13 +285,14 @@
   /* ── RESULT SCREEN ── */
   #result-screen {
     background: url('ELEMENTY/bg-red-A2.jpg') center/cover no-repeat;
-    gap: 12px;
-    padding: 32px 24px;
+    justify-content: flex-start;      /* treść od góry (logo/Well done/score wyżej) */
+    gap: 8px;
+    padding: 26px 24px 24px;
     text-align: center;
   }
   #result-screen .logo {
-    width: 150px;
-    margin-bottom: 16px;
+    width: 132px;
+    margin-bottom: 2px;
     filter: drop-shadow(0 2px 8px rgba(245,200,66,0.4));
   }
   #result-screen h2 {
@@ -307,8 +311,8 @@
     background: linear-gradient(135deg, rgba(200,150,30,0.15), rgba(200,150,30,0.05));
     border: 1px solid rgba(245,200,66,0.3);
     border-radius: 16px;
-    padding: 20px 28px;
-    margin: 4px 0;
+    padding: 40px 28px 26px;          /* wyższa ramka — rozszerzona w górę */
+    margin: 14px 0 6px;
   }
   #result-screen .discount-pct {
     font-size: 3.5rem;
@@ -324,7 +328,7 @@
     margin-top: 4px;
   }
   #result-screen .discount-code {
-    margin-top: 12px;
+    margin-top: 18px;
     background: rgba(245,200,66,0.1);
     border: 1px dashed rgba(245,200,66,0.5);
     border-radius: 8px;
@@ -333,12 +337,30 @@
     font-size: 1.2rem;
     letter-spacing: 0.15em;
   }
+  #result-screen .btn-copy {
+    margin-top: 10px;
+    background: rgba(245,200,66,0.18);
+    color: #ffffff;
+    border: 1px solid rgba(245,200,66,0.55);
+    border-radius: 50px;
+    padding: 7px 22px;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: bold;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  #result-screen .btn-copy:active { transform: scale(0.95); }
+  #result-screen .btn-copy.copied { background: #BB9750; color: #1a0600; border-color: #BB9750; }
   #result-screen .result-note {
     color: #ffffff;
     font-size: 0.72rem;
     letter-spacing: 0.06em;
     line-height: 1.6;
-    max-width: 280px;
+    max-width: 300px;
+    margin-top: 4px;
   }
   .btn-play-again {
     background: linear-gradient(90deg, #97702A 0%, #BB9750 50%, #97702A 100%);
@@ -353,6 +375,7 @@
     box-shadow: 0 4px 20px rgba(245,200,66,0.3);
     text-transform: uppercase;
     transition: transform 0.15s;
+    margin-top: auto;                 /* na dół ekranu (treść od góry) */
   }
   .btn-play-again:active { transform: scale(0.96); }
 
@@ -423,84 +446,7 @@
   <div class="star" style="width:2px;height:2px;background:#fff;top:25%;left:70%;animation-duration:3.9s;animation-delay:0.9s"></div>
 
   <!-- ── MIKOŁAJ NA SANIACH ── -->
-  <svg id="santa" viewBox="0 0 430 90" width="430" height="90" xmlns="http://www.w3.org/2000/svg">
-    <!-- Lejce -->
-    <path d="M330,50 C260,40 185,36 130,38 C90,40 55,41 22,44" fill="none" stroke="rgba(200,160,40,0.7)" stroke-width="1.8"/>
-    <!-- Renifer 1 — Rudolph -->
-    <g transform="translate(34,22) scale(-1,1)">
-      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#f0f0f0"/>
-      <circle cx="13" cy="11" r="6" fill="#f0f0f0"/>
-      <line x1="13" y1="6" x2="9" y2="-3" stroke="#f0f0f0" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#f0f0f0" stroke-width="1.5"/>
-      <line x1="13" y1="6" x2="17" y2="-2" stroke="#f0f0f0" stroke-width="1.8"/><line x1="17" y1="-2" x2="14" y2="-7" stroke="#f0f0f0" stroke-width="1.5"/><line x1="17" y1="-2" x2="21" y2="-6" stroke="#f0f0f0" stroke-width="1.5"/>
-      <line x1="-7" y1="24" x2="-11" y2="40" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="-2" y1="25" x2="-1" y2="41" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="4" y1="25" x2="7" y2="40" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="9" y1="24" x2="14" y2="38" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <circle cx="20" cy="11" r="3.5" fill="#c0392b"/>
-    </g>
-    <!-- Renifer 2 -->
-    <g transform="translate(108,20) scale(-1,1)">
-      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#f0f0f0"/>
-      <circle cx="13" cy="11" r="6" fill="#f0f0f0"/>
-      <line x1="13" y1="6" x2="9" y2="-3" stroke="#f0f0f0" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#f0f0f0" stroke-width="1.5"/>
-      <line x1="13" y1="6" x2="17" y2="-2" stroke="#f0f0f0" stroke-width="1.8"/><line x1="17" y1="-2" x2="14" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="17" y1="-2" x2="21" y2="-6" stroke="#f0f0f0" stroke-width="1.5"/>
-      <line x1="-7" y1="24" x2="-12" y2="39" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="-2" y1="25" x2="-2" y2="41" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="4" y1="25" x2="5" y2="40" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="9" y1="24" x2="13" y2="38" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-    </g>
-    <!-- Renifer 3 -->
-    <g transform="translate(182,22) scale(-1,1)">
-      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#f0f0f0"/>
-      <circle cx="13" cy="11" r="6" fill="#f0f0f0"/>
-      <line x1="13" y1="6" x2="9" y2="-3" stroke="#f0f0f0" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-9" stroke="#f0f0f0" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#f0f0f0" stroke-width="1.5"/>
-      <line x1="13" y1="6" x2="17" y2="-2" stroke="#f0f0f0" stroke-width="1.8"/><line x1="17" y1="-2" x2="15" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="17" y1="-2" x2="21" y2="-6" stroke="#f0f0f0" stroke-width="1.5"/>
-      <line x1="-7" y1="24" x2="-11" y2="40" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="-2" y1="25" x2="-3" y2="41" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="4" y1="25" x2="4" y2="41" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="9" y1="24" x2="12" y2="39" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-    </g>
-    <!-- Renifer 4 -->
-    <g transform="translate(256,24) scale(-1,1)">
-      <ellipse cx="0" cy="18" rx="13" ry="7" fill="#f0f0f0"/>
-      <circle cx="13" cy="11" r="6" fill="#f0f0f0"/>
-      <line x1="13" y1="6" x2="9" y2="-3" stroke="#f0f0f0" stroke-width="1.8"/><line x1="9" y1="-3" x2="5" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="9" y1="-3" x2="13" y2="-7" stroke="#f0f0f0" stroke-width="1.5"/>
-      <line x1="13" y1="6" x2="17" y2="-2" stroke="#f0f0f0" stroke-width="1.8"/><line x1="17" y1="-2" x2="15" y2="-8" stroke="#f0f0f0" stroke-width="1.5"/><line x1="17" y1="-2" x2="22" y2="-6" stroke="#f0f0f0" stroke-width="1.5"/>
-      <line x1="-7" y1="24" x2="-12" y2="38" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="-2" y1="25" x2="-3" y2="40" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="4" y1="25" x2="3" y2="41" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="9" y1="24" x2="12" y2="38" stroke="#f0f0f0" stroke-width="2.2" stroke-linecap="round"/>
-    </g>
-    <!-- Sanie -->
-    <g transform="translate(300,14)">
-      <!-- Pudło sań -->
-      <path d="M10,48 Q12,22 28,16 L80,16 Q94,16 98,28 L102,48 Q90,60 55,60 Q18,60 10,48Z" fill="#6b1a1a"/>
-      <!-- Płoza -->
-      <path d="M4,56 Q52,68 108,55" fill="none" stroke="#3d0e0e" stroke-width="5" stroke-linecap="round"/>
-      <!-- Wnętrze sań -->
-      <path d="M24,19 Q55,14 84,19 L82,38 Q55,34 24,38Z" fill="#8b2020"/>
-      <!-- Worek prezentów -->
-      <ellipse cx="28" cy="12" rx="10" ry="12" fill="#3d1800"/>
-      <line x1="28" y1="1" x2="25" y2="-3" stroke="#f0f0f0" stroke-width="2"/>
-      <ellipse cx="28" cy="-2" rx="5" ry="3" fill="#3d1800"/>
-      <!-- Mikołaj — ciało -->
-      <ellipse cx="62" cy="24" rx="18" ry="16" fill="#8b1a1a"/>
-      <!-- Pasek -->
-      <rect x="47" y="28" width="30" height="5" fill="#2a2a00" rx="1"/>
-      <rect x="58" y="27" width="8" height="7" fill="#c8961e" rx="1"/>
-      <!-- Głowa -->
-      <circle cx="62" cy="4" r="11" fill="#d4956a"/>
-      <!-- Czapka -->
-      <path d="M52,4 L56,8 L68,8 L76,-6 L62,-22Z" fill="#8b1a1a"/>
-      <line x1="51" y1="5" x2="71" y2="5" stroke="white" stroke-width="4"/>
-      <!-- Pompom -->
-      <circle cx="62" cy="-22" r="5" fill="white"/>
-      <!-- Broda -->
-      <ellipse cx="62" cy="12" rx="11" ry="7" fill="white" opacity="0.92"/>
-      <!-- Ręka z lejcami -->
-      <line x1="46" y1="20" x2="36" y2="14" stroke="#8b1a1a" stroke-width="5" stroke-linecap="round"/>
-    </g>
-  </svg>
+  <img id="santa" src="ELEMENTY/sanie_2.png" alt="">
 
   <!-- ── FIREWORKS CANVAS ── -->
   <canvas id="fw-canvas"></canvas>
@@ -654,9 +600,10 @@
       <div class="discount-pct" id="result-pct">5%</div>
       <div class="discount-label">Discount on your purchase</div>
       <div class="discount-code" id="result-code">LINDT5XMAS</div>
+      <button class="btn-copy" id="btn-copy" onclick="copyCode()">Copy code</button>
     </div>
     <div class="result-note">
-      Use this code at checkout in participating Lindt stores or online.<br>Valid until 31.12.2026.
+      Use in participating Lindt stores or online.<br>Valid until 31.12.2026.
     </div>
     <button class="btn-play-again" onclick="resetGame()">Play Again</button>
   </div>
@@ -1126,7 +1073,7 @@ function pralineSpeed() {
   const ramp = el < 12 ? el * 0.06 : 0.72 + (el - 12) * 0.24
   const r = Math.random()
   const variety = r * r * r * 6.5   // bias ku wolnym, rzadkie bardzo szybkie
-  return 1.1 + variety + ramp
+  return 1.5 + variety + ramp       // baza podniesiona (1.1→1.5): żwawszy start (~+35%)
 }
 
 function gameLoop(ts) {
@@ -1329,7 +1276,30 @@ function showResult() {
   document.getElementById('result-score-val').textContent = score
   document.getElementById('result-pct').textContent = pct + '%'
   document.getElementById('result-code').textContent = code
+  const cb = document.getElementById('btn-copy')
+  if (cb) { cb.textContent = 'Copy code'; cb.classList.remove('copied') }   // reset przycisku
   document.getElementById('result-screen').classList.remove('hidden')
+}
+
+function copyCode() {
+  const code = document.getElementById('result-code').textContent.trim()
+  const btn = document.getElementById('btn-copy')
+  const done = () => {
+    btn.textContent = 'Code copied ✓'; btn.classList.add('copied')
+    setTimeout(() => { btn.textContent = 'Copy code'; btn.classList.remove('copied') }, 2000)
+  }
+  const fallback = () => {
+    const ta = document.createElement('textarea')
+    ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0'
+    document.body.appendChild(ta); ta.focus(); ta.select()
+    try { document.execCommand('copy') } catch(e) {}
+    document.body.removeChild(ta); done()
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(done).catch(fallback)
+    } else fallback()
+  } catch(e) { fallback() }
 }
 
 function resetGame() {
@@ -1546,7 +1516,7 @@ function launchFireworkBurst() {
 function scheduleFireworks() {
   const delay = 2500 + Math.random() * 3500
   fwScheduleTimer = setTimeout(() => {
-    launchFireworkBurst()
+    if (!gameRunning) launchFireworkBurst()   // NIE podczas 20 s rozgrywki (tylko start/wynik)
     scheduleFireworks()
   }, delay)
 }
