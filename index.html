@@ -42,7 +42,7 @@
     position: absolute;
     inset: 0;
     z-index: 0;
-    background: url('ELEMENTY/background-red.jpg') center/cover no-repeat;
+    background: url('ELEMENTY/bg-red-A2.jpg') center/cover no-repeat;
     transform: scale(1.06);          /* overscan, by blur nie odsłaniał krawędzi */
     will-change: filter;
   }
@@ -162,7 +162,7 @@
 
   /* ── START SCREEN ── */
   #start-screen {
-    background: url('ELEMENTY/background-red-A.jpg') center/cover no-repeat;
+    background: url('ELEMENTY/bg-red-A2.jpg') center/cover no-repeat;
     gap: 0;
   }
 
@@ -281,7 +281,7 @@
 
   /* ── RESULT SCREEN ── */
   #result-screen {
-    background: url('ELEMENTY/background-red-A.jpg') center/cover no-repeat;
+    background: url('ELEMENTY/bg-red-A2.jpg') center/cover no-repeat;
     gap: 12px;
     padding: 32px 24px;
     text-align: center;
@@ -586,7 +586,7 @@
 
 
   <!-- TŁO MUZYCZNE (startuje w momencie startu rozgrywki) -->
-  <audio id="bg-music" src="ELEMENTY/music.mp3" loop preload="auto" playsinline></audio>
+  <audio id="bg-music" src="ELEMENTY/merry-loop.m4a" loop preload="auto" playsinline></audio>
 
   <!-- iOS PERMISSION -->
   <div id="ios-perm" class="hidden">
@@ -602,12 +602,12 @@
     <div class="subtitle">Catch & Win</div>
 
     <div class="carousel" id="carousel">
-      <div class="slot"><img src="ELEMENTY/MILK.png" alt=""></div>
-      <div class="slot"><img src="ELEMENTY/Lindo-a.png" alt=""></div>
-      <div class="slot"><img src="ELEMENTY/Extra Dark.png" alt=""></div>
-      <div class="slot"><img src="ELEMENTY/MILK HAZELNUT.png" alt=""></div>
-      <div class="slot"><img src="ELEMENTY/Lindo-c.png" alt=""></div>
-      <div class="slot"><img src="ELEMENTY/MILK STRAWBERRY CREAM.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/teddy-1.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/teddy-2.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/teddy-3.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/teddy-1.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/teddy-2.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/teddy-3.png" alt=""></div>
     </div>
 
     <button class="btn-play" onclick="onPlayPressed()">▶ Play &amp; Win</button>
@@ -853,9 +853,12 @@ function playMusicNote() {
 // ── Tło muzyczne = plik MP3 (startuje dokładnie w momencie startu rozgrywki) ──
 const bgMusic = document.getElementById('bg-music')
 bgMusic.volume = 0.4
+// Wersja BEZ muzyki: adres /nomusic.html (albo ?music=off). Efekty dźwiękowe grają zawsze.
+const MUSIC_ON = !(location.search.indexOf('music=off') >= 0 || location.pathname.indexOf('nomusic') >= 0)
 
 // Odblokowanie audio na mobile: krótkie wyciszone play→pause WEWNĄTRZ gestu (Play)
 function unlockBgMusic() {
+  if (!MUSIC_ON) return
   try {
     bgMusic.muted = true
     const p = bgMusic.play()
@@ -865,6 +868,7 @@ function unlockBgMusic() {
 }
 
 function startMusic() {
+  if (!MUSIC_ON) return
   try { bgMusic.currentTime = 0; const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {}
 }
 
@@ -934,20 +938,11 @@ genSnow(document.getElementById('result-screen'), 55, -1)          // za treści
   setInterval(() => { base += TWO / N; layout() }, 2600)   // wolniej: skok co 2.6s; przejście 0.8s, potem pauza
 })()
 
-// tylko pralinki LINDOR (7 starych + 5 nowych packshotów); bez misiów/królików/pudełek
+// spadające obiekty = misie Lindt (3 warianty, równe punkty/waga)
 const ITEM_DEFS = [
-  { src: 'ELEMENTY/Lindo-a.png', pts: 5, w: 1 },
-  { src: 'ELEMENTY/Lindo-b.png', pts: 5, w: 1 },
-  { src: 'ELEMENTY/Lindo-c.png', pts: 5, w: 1 },
-  { src: 'ELEMENTY/Lindo-d.png', pts: 5, w: 1 },
-  { src: 'ELEMENTY/Lindo-e.png', pts: 5, w: 1 },
-  { src: 'ELEMENTY/Lindo-f.png', pts: 5, w: 1 },
-  { src: 'ELEMENTY/Lindo-g.png', pts: 5, w: 1 },
-  { src: 'ELEMENTY/MILK.png', pts: 5, w: 1 },
-  { src: 'ELEMENTY/Extra Dark.png', pts: 5, w: 1 },
-  { src: 'ELEMENTY/MILK HAZELNUT.png', pts: 5, w: 1 },
-  { src: 'ELEMENTY/MILK SEASALT CARAMEL.png', pts: 5, w: 1 },
-  { src: 'ELEMENTY/MILK STRAWBERRY CREAM.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/teddy-1.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/teddy-2.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/teddy-3.png', pts: 5, w: 1 },
 ]
 
 const images = {}
@@ -1108,8 +1103,8 @@ function updateHUD() {
 
 function spawnItem() {
   const def = pickItemDef()
-  // wszystkie to pralinki LINDOR — jednolita szerokość, wysokość z proporcji obrazu
-  const targetW = 52 * 0.75
+  // misie: szersze/niższe niż pralinki — większa szerokość, wysokość z proporcji obrazu
+  const targetW = 60
   const ratio = (def.naturalH && def.naturalW) ? def.naturalH / def.naturalW : 1
   const w = targetW
   const h = targetW * ratio
