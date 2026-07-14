@@ -1502,7 +1502,11 @@ function fwLoop() {
   }
 }
 
+// Fajerwerki WYŁĄCZONE na życzenie (kod zostaje). Zmień na true, żeby je przywrócić.
+const FIREWORKS_ON = false
+
 function launchFireworkBurst() {
+  if (!FIREWORKS_ON) return
   const count = 2 + Math.floor(Math.random() * 4)
   for (let i = 0; i < count; i++) {
     setTimeout(() => {
@@ -1535,7 +1539,7 @@ fwCanvas.width = container.offsetWidth
 fwCanvas.height = container.offsetHeight
 setupTouch()
 scheduleSanta()
-scheduleFireworks()
+if (FIREWORKS_ON) scheduleFireworks()
 
 // Pre-load images on start
 loadImages(() => {
