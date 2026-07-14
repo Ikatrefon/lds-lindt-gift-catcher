@@ -131,11 +131,22 @@
     z-index: 3;
     pointer-events: none;
     opacity: 0;
-    width: 300px;
-    height: auto;
+    width: 340px;
+    height: 106px;
     top: 8%;
     transform: translateX(115vw);
     filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+  }
+  /* galopujące renifery: sprite-sheet 14 klatek (340px każda), cyklowane steps() */
+  #santa-sprite {
+    width: 340px;
+    height: 106px;
+    background: url('ELEMENTY/santa-gallop.png') 0 0 no-repeat;
+    animation: gallop 0.7s steps(14) infinite;
+  }
+  @keyframes gallop {
+    from { background-position-x: 0; }
+    to   { background-position-x: -4760px; }
   }
 
   /* ── FIREWORKS CANVAS ── */
@@ -447,7 +458,7 @@
   <div class="star" style="width:2px;height:2px;background:#fff;top:25%;left:70%;animation-duration:3.9s;animation-delay:0.9s"></div>
 
   <!-- ── MIKOŁAJ NA SANIACH ── -->
-  <img id="santa" src="ELEMENTY/sanie_2.png" alt="">
+  <div id="santa"><div id="santa-sprite"></div></div>
 
   <!-- ── FIREWORKS CANVAS ── -->
   <canvas id="fw-canvas"></canvas>
