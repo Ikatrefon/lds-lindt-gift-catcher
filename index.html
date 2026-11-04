@@ -1187,19 +1187,18 @@ function drawBasket() {
     ctx.fill()
   }
 
-  // Draw caught items inside open top of basket (top ~40% of basket height)
+  // Draw caught items seated in the open top of the basket.
+  // Anchor each teddy's BOTTOM at the fill-line and clip only BELOW it:
+  // bottoms sink into the box, heads stay whole (never sliced at the rim).
   if (basketContents.length > 0) {
-    const iw = 16
-    const gap = 2
+    const iw = 17
+    const gap = 3
     const cols = 5
-    const rows = Math.ceil(basketContents.length / cols)
-    // The basket interior (open top) occupies roughly the top 42% of basket.h
-    const interiorTop = basket.y + 3
-    const interiorH   = basket.h * 0.42
-    const rowH = interiorH / Math.max(rows, 1)
+    const rowStep = 13                        // each higher row is raised this much
+    const fillLine = basket.y + basket.h * 0.46  // chocolates rest here; lower part hides in box
     ctx.save()
     ctx.beginPath()
-    ctx.rect(basket.x + 8, interiorTop, basket.w - 16, interiorH + 2)
+    ctx.rect(basket.x + 6, 0, basket.w - 12, fillLine)  // top = 0 → no head clipping
     ctx.clip()
     basketContents.forEach((bi, idx) => {
       const col = idx % cols
@@ -1207,10 +1206,10 @@ function drawBasket() {
       const rowStart = row * cols
       const rowCount = Math.min(cols, basketContents.length - rowStart)
       const rowW = rowCount * (iw + gap) - gap
-      const ix = basket.x + (basket.w - rowW) / 2 + col * (iw + gap)
       const ih = iw * bi.aspect
-      const iy = interiorTop + row * rowH + (rowH - ih) / 2
-      ctx.globalAlpha = 0.93
+      const ix = basket.x + (basket.w - rowW) / 2 + col * (iw + gap)
+      const iy = fillLine - ih - row * rowStep
+      ctx.globalAlpha = 0.97
       ctx.drawImage(bi.img, ix, iy, iw, ih)
     })
     ctx.restore()
