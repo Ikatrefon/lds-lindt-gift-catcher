@@ -811,11 +811,45 @@ function playMusicNote() {
 
 // ── Tło muzyczne = plik MP3 (startuje dokładnie w momencie startu rozgrywki) ──
 const bgMusic = document.getElementById('bg-music')
-bgMusic.volume = 0.4
+const MUSIC_VOL_FULL = 0.4     // pełna głośność (ekran startowy + rozgrywka)
+const MUSIC_VOL_DUCK = 0.25    // lekkie przyciszenie na czas odliczania 3-2-1
+bgMusic.volume = MUSIC_VOL_FULL
 // Wersja z alternatywnym podkładem (fortepian): adres /piano.html → inny plik muzyki.
 if (location.pathname.indexOf('piano') >= 0) bgMusic.src = 'ELEMENTY/piano-loop.m4a'
+// Wariant „intro": muzyka gra już od ekranu startowego (pierwszy gest) + duck w odliczaniu. Adres /piano-intro.html
+const MUSIC_EARLY = location.pathname.indexOf('piano-intro') >= 0
 // Wersja BEZ muzyki: adres /nomusic.html (albo ?music=off). Efekty dźwiękowe grają zawsze.
 const MUSIC_ON = !(location.search.indexOf('music=off') >= 0 || location.pathname.indexOf('nomusic') >= 0)
+
+// Płynna zmiana głośności tła (duck / powrót)
+let _volFade = null
+function fadeVolume(target, ms) {
+  if (_volFade) { clearInterval(_volFade); _volFade = null }
+  const start = bgMusic.volume, t0 = performance.now()
+  if (ms <= 0) { bgMusic.volume = target; return }
+  _volFade = setInterval(() => {
+    const k = Math.min(1, (performance.now() - t0) / ms)
+    bgMusic.volume = Math.max(0, Math.min(1, start + (target - start) * k))
+    if (k >= 1) { clearInterval(_volFade); _volFade = null }
+  }, 30)
+}
+
+function ensureMusicPlaying() {
+  if (!MUSIC_ON) return
+  if (bgMusic.paused) { try { const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {} }
+}
+
+// Wariant intro: wystartuj muzykę przy PIERWSZYM geście na stronie (mobile wymaga gestu)
+let _musicKicked = false
+function kickMusicEarly() {
+  if (!MUSIC_EARLY || !MUSIC_ON || _musicKicked) return
+  _musicKicked = true
+  try { bgMusic.currentTime = 0; bgMusic.volume = MUSIC_VOL_FULL; const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {}
+}
+if (MUSIC_EARLY) {
+  window.addEventListener('pointerdown', kickMusicEarly, { once: true })
+  window.addEventListener('touchstart', kickMusicEarly, { once: true })
+}
 
 // Odblokowanie audio na mobile: krótkie wyciszone play→pause WEWNĄTRZ gestu (Play)
 function unlockBgMusic() {
@@ -830,7 +864,13 @@ function unlockBgMusic() {
 
 function startMusic() {
   if (!MUSIC_ON) return
-  try { bgMusic.currentTime = 0; const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {}
+  if (MUSIC_EARLY) {
+    // muzyka już gra od ekranu startowego — nie restartuj, tylko przywróć pełną głośność po odliczaniu
+    ensureMusicPlaying()
+    fadeVolume(MUSIC_VOL_FULL, 500)
+    return
+  }
+  try { bgMusic.currentTime = 0; bgMusic.volume = MUSIC_VOL_FULL; const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {}
 }
 
 function stopMusic() {
@@ -1024,6 +1064,8 @@ function runCountdown(cb) {
   const el = document.getElementById('countdown')
   const span = el.querySelector('span')
   el.classList.remove('hidden')
+  // wariant intro: muzyka gra od startu — lekko przyciszona na czas odliczania
+  if (MUSIC_EARLY && MUSIC_ON) { ensureMusicPlaying(); fadeVolume(MUSIC_VOL_DUCK, 350) }
   let n = 3
   function step() {
     if (n > 0) {
@@ -1363,7 +1405,8 @@ function requestIOSPermission() {
 }
 
 function onPlayPressed() {
-  unlockBgMusic()   // odblokuj audio w obrębie gestu (mobile) — odtworzy się dopiero w beginPlay
+  if (!MUSIC_EARLY) unlockBgMusic()   // odblokuj audio w obrębie gestu (mobile) — odtworzy się dopiero w beginPlay
+  // intro: muzyka już wystartowała od pierwszego gestu (kickMusicEarly) — nie ruszamy jej tu
   if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
     document.getElementById('ios-perm').classList.remove('hidden')
   } else {
