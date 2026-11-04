@@ -595,7 +595,7 @@
   <div id="tap-gate" class="hidden">
     <img src="ELEMENTY/Lindt-logo.png" style="width:90px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
     <div class="tg-title">Gift Catcher</div>
-    <div class="tg-cta">🔊 Tap to Start</div>
+    <div class="tg-cta">Tap to Start</div>
     <div class="tg-hint">Sound on</div>
   </div>
 
@@ -899,9 +899,11 @@ function kickMusicEarly() {
   try { const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {}
   try { bgMusic.currentTime = 0 } catch(e) {}
 }
-if (MUSIC_EARLY) {
-  window.addEventListener('pointerdown', kickMusicEarly, { once: true })
-  window.addEventListener('touchstart', kickMusicEarly, { once: true })
+// iOS Safari odblokowuje audio tylko na zdarzeniach KOŃCA gestu (touchend/click), NIE na touchstart.
+// Wariant z ekranem „Tap to Start" obsługuje to w setupTapGate — tu tylko wariant bez bramki.
+if (MUSIC_EARLY && !TAP_GATE) {
+  ['touchend', 'click', 'pointerup'].forEach(ev =>
+    window.addEventListener(ev, kickMusicEarly, { once: true }))
 }
 
 // Odblokowanie audio na mobile: krótkie wyciszone play→pause WEWNĄTRZ gestu (Play)
@@ -1464,9 +1466,10 @@ function setupTapGate() {
   const gate = document.getElementById('tap-gate')
   if (!gate) return
   gate.classList.remove('hidden')
+  // touchend/click = zdarzenia honorowane przez iOS do odblokowania audio (touchstart NIE działa na iOS)
   const go = () => { kickMusicEarly(); gate.classList.add('hidden') }
+  gate.addEventListener('touchend', go, { once: true })
   gate.addEventListener('click', go, { once: true })
-  gate.addEventListener('touchstart', (e) => { e.preventDefault(); go() }, { once: true, passive: false })
 }
 
 function onPlayPressed() {
