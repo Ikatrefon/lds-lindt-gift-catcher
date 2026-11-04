@@ -812,6 +812,8 @@ function playMusicNote() {
 // ── Tło muzyczne = plik MP3 (startuje dokładnie w momencie startu rozgrywki) ──
 const bgMusic = document.getElementById('bg-music')
 bgMusic.volume = 0.4
+// Wersja z alternatywnym podkładem (fortepian): adres /piano.html → inny plik muzyki.
+if (location.pathname.indexOf('piano') >= 0) bgMusic.src = 'ELEMENTY/piano-loop.m4a'
 // Wersja BEZ muzyki: adres /nomusic.html (albo ?music=off). Efekty dźwiękowe grają zawsze.
 const MUSIC_ON = !(location.search.indexOf('music=off') >= 0 || location.pathname.indexOf('nomusic') >= 0)
 

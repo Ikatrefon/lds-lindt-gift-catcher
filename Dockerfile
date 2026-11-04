@@ -1,6 +1,8 @@
 FROM nginx:alpine
 COPY . /usr/share/nginx/html
-# wersja BEZ muzyki = ten sam plik pod /nomusic.html (JS wykrywa ścieżkę i wyłącza muzykę tła)
-RUN cp /usr/share/nginx/html/index.html /usr/share/nginx/html/nomusic.html
+# warianty = ten sam plik pod innymi adresami (JS wykrywa ścieżkę):
+#   /nomusic.html = bez muzyki tła · /piano.html = podkład fortepianowy
+RUN cp /usr/share/nginx/html/index.html /usr/share/nginx/html/nomusic.html \
+ && cp /usr/share/nginx/html/index.html /usr/share/nginx/html/piano.html
 COPY default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
