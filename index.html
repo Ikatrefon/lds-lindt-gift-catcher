@@ -42,7 +42,7 @@
     position: absolute;
     inset: 0;
     z-index: 0;
-    background: url('ELEMENTY/bg-red-A2.jpg') center/cover no-repeat;
+    background: url('ELEMENTY/LindtTeddyGame.png') center/cover no-repeat #8a1518;
     transform: scale(1.06);          /* overscan, by blur nie odsłaniał krawędzi */
     will-change: filter;
   }
@@ -614,7 +614,7 @@
       <div class="slot"><img src="ELEMENTY/teddy-3.png" alt=""></div>
     </div>
 
-    <button class="btn-play" onclick="onPlayPressed()">▶ Play &amp; Win</button>
+    <button class="btn-play" onclick="onPlayPressed()">Play &amp; Win</button>
 
     <div class="discount-hint">
       Catch chocolates to earn<br>
@@ -893,7 +893,11 @@ let _musicKicked = false
 function kickMusicEarly() {
   if (!MUSIC_EARLY || !MUSIC_ON || _musicKicked) return
   _musicKicked = true
-  try { bgMusic.currentTime = 0; bgMusic.volume = MUSIC_VOL_FULL; const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {}
+  bgMusic.volume = MUSIC_VOL_FULL
+  // play() NAJPIERW (wewnątrz gestu); currentTime ustawiamy best-effort PO — na świeżym
+  // elemencie i tak jest 0, a ustawianie go przed załadowaniem mediów rzuca wyjątek i blokowałoby play().
+  try { const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {}
+  try { bgMusic.currentTime = 0 } catch(e) {}
 }
 if (MUSIC_EARLY) {
   window.addEventListener('pointerdown', kickMusicEarly, { once: true })
