@@ -70,6 +70,44 @@
     100% { transform: scale(1);   opacity: 0.95; }
   }
 
+  /* ekran „Tap to Start" (wariant /piano-tap.html) — pierwszy gest odblokowuje dźwięk */
+  #tap-gate {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    background: rgba(10,3,0,0.92);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #tap-gate.hidden { display: none; }
+  #tap-gate .tg-title {
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    color: #ffffff;
+    font-size: 2rem;
+    letter-spacing: 0.04em;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  }
+  #tap-gate .tg-cta {
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #BB9750;
+    font-size: 1.15rem;
+    animation: tgPulse 1.4s ease-in-out infinite;
+  }
+  #tap-gate .tg-hint { color: #d4956a; font-size: 0.85rem; letter-spacing: 0.05em; }
+  @keyframes tgPulse {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.06); }
+  }
+
   /* ──────────── CHRISTMAS DECOR ──────────── */
   .garland {
     position: absolute;
@@ -553,6 +591,14 @@
     <button class="btn-perm" onclick="requestIOSPermission()">Enable Tilt Control</button>
   </div>
 
+  <!-- TAP TO START (wariant /piano-tap.html) -->
+  <div id="tap-gate" class="hidden">
+    <img src="ELEMENTY/Lindt-logo.png" style="width:90px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
+    <div class="tg-title">Gift Catcher</div>
+    <div class="tg-cta">🔊 Tap to Start</div>
+    <div class="tg-hint">Sound on</div>
+  </div>
+
   <!-- START SCREEN -->
   <div id="start-screen" class="screen">
     <img src="ELEMENTY/Lindt-logo.png" class="logo" alt="Lindt">
@@ -816,8 +862,11 @@ const MUSIC_VOL_DUCK = 0.25    // lekkie przyciszenie na czas odliczania 3-2-1
 bgMusic.volume = MUSIC_VOL_FULL
 // Wersja z alternatywnym podkładem (fortepian): adres /piano.html → inny plik muzyki.
 if (location.pathname.indexOf('piano') >= 0) bgMusic.src = 'ELEMENTY/piano-loop.m4a'
-// Wariant „intro": muzyka gra już od ekranu startowego (pierwszy gest) + duck w odliczaniu. Adres /piano-intro.html
-const MUSIC_EARLY = location.pathname.indexOf('piano-intro') >= 0
+// Warianty z muzyką od ekranu startowego + duck w odliczaniu 3-2-1:
+//   /piano-intro.html = muzyka rusza przy pierwszym geście (np. PLAY)
+//   /piano-tap.html   = ekran „Tap to Start" → po dotknięciu muzyka gra już na ekranie startowym
+const TAP_GATE = location.pathname.indexOf('piano-tap') >= 0
+const MUSIC_EARLY = TAP_GATE || location.pathname.indexOf('piano-intro') >= 0
 // Wersja BEZ muzyki: adres /nomusic.html (albo ?music=off). Efekty dźwiękowe grają zawsze.
 const MUSIC_ON = !(location.search.indexOf('music=off') >= 0 || location.pathname.indexOf('nomusic') >= 0)
 
@@ -1404,6 +1453,18 @@ function requestIOSPermission() {
   }
 }
 
+// Ekran „Tap to Start": pokazany na wejściu; pierwszy dotyk odblokowuje i startuje muzykę,
+// potem znika i odsłania ekran startowy z już grającą muzyką.
+function setupTapGate() {
+  if (!TAP_GATE) return
+  const gate = document.getElementById('tap-gate')
+  if (!gate) return
+  gate.classList.remove('hidden')
+  const go = () => { kickMusicEarly(); gate.classList.add('hidden') }
+  gate.addEventListener('click', go, { once: true })
+  gate.addEventListener('touchstart', (e) => { e.preventDefault(); go() }, { once: true, passive: false })
+}
+
 function onPlayPressed() {
   if (!MUSIC_EARLY) unlockBgMusic()   // odblokuj audio w obrębie gestu (mobile) — odtworzy się dopiero w beginPlay
   // intro: muzyka już wystartowała od pierwszego gestu (kickMusicEarly) — nie ruszamy jej tu
@@ -1593,6 +1654,7 @@ resize()
 fwCanvas.width = container.offsetWidth
 fwCanvas.height = container.offsetHeight
 setupTouch()
+setupTapGate()
 scheduleSanta()
 if (FIREWORKS_ON) scheduleFireworks()
 
