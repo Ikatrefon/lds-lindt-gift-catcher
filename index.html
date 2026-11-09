@@ -103,26 +103,20 @@
     animation: tgPulse 1.4s ease-in-out infinite;
   }
   #tap-gate .tg-hint { color: #d4956a; font-size: 0.85rem; letter-spacing: 0.05em; }
-  #tap-gate .tg-controls {
-    margin-top: 6px;
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-    background: rgba(187,151,80,0.14);
-    border: 1.5px solid rgba(187,151,80,0.6);
-    border-radius: 18px;
-    padding: 18px 24px;
-    max-width: 320px;
-  }
-  #tap-gate .tg-swipe { width: 118px; height: 58px; }
-  #tap-gate .tg-swipe .touch { animation: tgSlide 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  /* instrukcja sterowania (ekran „Enable Tilt Control") — BEZ ramki */
+  .ctrl-divider { width: 72%; max-width: 280px; height: 1px; background: rgba(187,151,80,0.45); margin: 6px 0 2px; }
+  .ctrl-hint { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 320px; }
+  .ctrl-swipe { width: 118px; height: 58px; }
+  .ctrl-swipe .touch { animation: tgSlide 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
   @keyframes tgSlide {
     0%, 100% { transform: translateX(-20px); }
     50%      { transform: translateX(20px); }
   }
-  #tap-gate .tg-controls-txt {
+  .ctrl-hint-txt {
     font-family: 'Optima', 'Segoe UI', sans-serif;
-    color: #f3e3c0; font-size: 1.02rem; line-height: 1.45; letter-spacing: 0.02em;
+    color: #e9cfa0; font-size: 1.02rem; line-height: 1.45; letter-spacing: 0.02em;
   }
-  #tap-gate .tg-controls-txt b { color: #ffffff; }
+  .ctrl-hint-txt b { color: #ffffff; }
   @keyframes tgPulse {
     0%, 100% { opacity: 0.55; transform: scale(1); }
     50%      { opacity: 1;    transform: scale(1.06); }
@@ -474,9 +468,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 32px;
+    justify-content: flex-start;
+    gap: 18px;
+    padding: 8vh 28px 32px;
     text-align: center;
   }
   #ios-perm.hidden { display: none; }
@@ -607,18 +601,11 @@
   <!-- iOS PERMISSION -->
   <div id="ios-perm" class="hidden">
     <img src="ELEMENTY/Lindt-logo.png" style="width:80px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
-    <p>To control the basket with your phone's tilt, we need access to motion sensors.<br><br>You can also move the basket by sliding your finger across the screen.</p>
+    <p>To control the basket with your phone's tilt, we need access to motion sensors.</p>
     <button class="btn-perm" onclick="requestIOSPermission()">Enable Tilt Control</button>
-  </div>
-
-  <!-- TAP TO START (wariant /piano-tap.html) -->
-  <div id="tap-gate" class="hidden">
-    <img src="ELEMENTY/Lindt-logo.png" style="width:90px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
-    <div class="tg-title">Gift Catcher</div>
-    <div class="tg-cta">Tap to Start</div>
-    <div class="tg-hint">Sound on</div>
-    <div class="tg-controls">
-      <svg class="tg-swipe" viewBox="0 0 140 70" fill="none" aria-hidden="true">
+    <div class="ctrl-divider"></div>
+    <div class="ctrl-hint">
+      <svg class="ctrl-swipe" viewBox="0 0 140 70" fill="none" aria-hidden="true">
         <!-- poziomy dwukierunkowy ślad -->
         <path d="M24 50 H116" stroke="#BB9750" stroke-width="4" stroke-linecap="round"/>
         <path d="M24 50 l15 -11 M24 50 l15 11" stroke="#BB9750" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -629,8 +616,16 @@
           <circle cx="70" cy="24" r="10" fill="#f5c842"/>
         </g>
       </svg>
-      <div class="tg-controls-txt">Tilt your phone <b>or slide your finger</b><br>to move the basket</div>
+      <div class="ctrl-hint-txt">Tilt your phone <b>or slide your finger</b><br>to move the basket</div>
     </div>
+  </div>
+
+  <!-- TAP TO START (wariant /piano-tap.html) -->
+  <div id="tap-gate" class="hidden">
+    <img src="ELEMENTY/Lindt-logo.png" style="width:90px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
+    <div class="tg-title">Gift Catcher</div>
+    <div class="tg-cta">Tap to Start</div>
+    <div class="tg-hint">Sound on</div>
   </div>
 
   <!-- START SCREEN -->
