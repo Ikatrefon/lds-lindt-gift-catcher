@@ -1255,7 +1255,7 @@ function pralineSpeed() {
   const ramp = el < 12 ? el * 0.06 : 0.72 + (el - 12) * 0.24
   const r = Math.random()
   const variety = r * r * 6.0        // mniej skrajnie wolnych na starcie (r² zamiast r³)
-  return 2.6 + variety + ramp        // baza 2.2→2.6: szybsze opadanie
+  return 3.0 + variety + ramp        // baza 2.6→3.0: jeszcze szybsze opadanie
 }
 
 function gameLoop(ts) {
@@ -1418,7 +1418,7 @@ function endGame() {
   clearInterval(timerInterval)
   playGameOver()
   releaseWakeLock()
-  document.getElementById('hud').style.display = 'none'
+  // HUD ZOSTAJE widoczny przez outro (żeby dolny pasek nie znikał) — chowamy go dopiero w showResult
   // blur tła zostaje (nie wracamy do ostrości); zresetuje go dopiero nowa gra
   runOutro()
 }
@@ -1474,6 +1474,7 @@ function showResult() {
   document.getElementById('result-code').textContent = code
   const cb = document.getElementById('btn-copy')
   if (cb) { cb.textContent = 'Copy code'; cb.classList.remove('copied') }   // reset przycisku
+  document.getElementById('hud').style.display = 'none'   // HUD chowamy dopiero teraz (był widoczny przez outro)
   document.getElementById('result-screen').classList.remove('hidden')
 }
 
