@@ -320,9 +320,9 @@
   #hud .hud-time.low #time-val, #hud .hud-time.low .unit { color: #e74c3c; }
   #hud .hud-lives { display: flex; gap: 5px; align-items: center; flex-direction: column; }
   #hud .hud-lives .lbl { font-size: 0.62rem; color: #a07840; letter-spacing: 0.1em; text-transform: uppercase; }
-  #hud .hud-lives .hearts-row { display: flex; gap: 5px; }
-  #hud .hud-lives .heart { font-size: 1.9rem; transition: transform 0.2s; }
-  #hud .hud-lives .heart.lost { opacity: 0.18; transform: scale(0.8); }
+  #hud .hud-lives .hearts-row { display: flex; gap: 4px; align-items: flex-end; }
+  #hud .hud-lives .life { height: 27px; width: auto; transition: opacity 0.2s, transform 0.2s; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); }
+  #hud .hud-lives .life.lost { opacity: 0.18; transform: scale(0.8); }
 
   /* ── GAME CANVAS ── */
   #game-canvas {
@@ -587,7 +587,7 @@
   <!-- iOS PERMISSION -->
   <div id="ios-perm" class="hidden">
     <img src="ELEMENTY/Lindt-logo.png" style="width:80px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
-    <p>To control the basket with your phone's tilt, we need access to motion sensors.</p>
+    <p>To control the basket with your phone's tilt, we need access to motion sensors.<br><br>You can also move the basket by sliding your finger across the screen.</p>
     <button class="btn-perm" onclick="requestIOSPermission()">Enable Tilt Control</button>
   </div>
 
@@ -618,7 +618,7 @@
 
     <div class="discount-hint">
       Catch chocolates to earn<br>
-      up to <strong style="color:#ffffff">20% discount</strong> on your purchase
+      up to <strong style="color:#ffffff">15% discount</strong> on your purchase
     </div>
   </div>
 
@@ -637,9 +637,11 @@
     <div class="hud-lives" id="lives-display">
       <span class="lbl">Lives</span>
       <div class="hearts-row">
-        <div class="heart" id="h1">❤️</div>
-        <div class="heart" id="h2">❤️</div>
-        <div class="heart" id="h3">❤️</div>
+        <img class="life" id="h1" src="ELEMENTY/teddy-life.png" alt="">
+        <img class="life" id="h2" src="ELEMENTY/teddy-life.png" alt="">
+        <img class="life" id="h3" src="ELEMENTY/teddy-life.png" alt="">
+        <img class="life" id="h4" src="ELEMENTY/teddy-life.png" alt="">
+        <img class="life" id="h5" src="ELEMENTY/teddy-life.png" alt="">
       </div>
     </div>
   </div>
@@ -1007,6 +1009,43 @@ const totalImages = ITEM_DEFS.length + 1
 
 let basketImg = null
 
+// ── Sanie Lindt: przelot przez ekran gry na starcie rundy + ślad świątecznych iskier ──
+const sleighImg = new Image()
+sleighImg.src = 'ELEMENTY/sleigh.png'
+let sleighFly = null              // {x,y,w,h,vx} gdy sanie przelatują
+let sleighSparkles = []
+class Sparkle {
+  constructor(x, y) {
+    this.x = x + (Math.random() - 0.5) * 20
+    this.y = y + (Math.random() - 0.5) * 34
+    this.vx = -0.3 - Math.random() * 0.7       // dryf do tyłu (sanie lecą w prawo)
+    this.vy = (Math.random() - 0.5) * 0.7
+    this.alpha = 1
+    this.size = 1.4 + Math.random() * 2.6
+    this.decay = 0.012 + Math.random() * 0.022
+    this.color = Math.random() < 0.5 ? '#f5c842' : '#ffffff'
+    this.rot = Math.random() * Math.PI
+  }
+  update() { this.x += this.vx; this.y += this.vy; this.vy += 0.012; this.alpha -= this.decay }
+  get dead() { return this.alpha <= 0 }
+  draw(c) {
+    c.save(); c.globalAlpha = Math.max(0, this.alpha); c.fillStyle = this.color
+    c.translate(this.x, this.y); c.rotate(this.rot)
+    const s = this.size
+    c.beginPath()
+    c.moveTo(0, -s*2); c.lineTo(s*0.45, -s*0.45); c.lineTo(s*2, 0); c.lineTo(s*0.45, s*0.45)
+    c.lineTo(0, s*2); c.lineTo(-s*0.45, s*0.45); c.lineTo(-s*2, 0); c.lineTo(-s*0.45, -s*0.45)
+    c.closePath(); c.fill(); c.restore()
+  }
+}
+function startSleighFlyby() {
+  const h = Math.min(canvas.height * 0.17, 150)
+  const ratio = (sleighImg.naturalWidth && sleighImg.naturalHeight) ? sleighImg.naturalWidth / sleighImg.naturalHeight : 0.9
+  const w = h * ratio
+  sleighFly = { x: -w - 20, y: canvas.height * 0.10, w, h, vx: (canvas.width + w + 60) / 125 }  // przelot ~2 s
+  sleighSparkles = []
+}
+
 function loadImages(cb) {
   basketImg = new Image()
   basketImg.onload = () => {
@@ -1064,7 +1103,9 @@ function drawBlik() {
   ctx.restore()
 }
 let score = 0
-let lives = 3
+let lives = 5
+let caughtCount = 0      // złapane misie (licznik do nagrody = % złapanych)
+let missedCount = 0      // pominięte misie
 let timeLeft = GAME_TIME
 let gameRunning = false
 let items = []
@@ -1089,8 +1130,10 @@ function resize() {
 }
 
 function startGame() {
-  score = 0; lives = 3; timeLeft = GAME_TIME
+  score = 0; lives = 5; timeLeft = GAME_TIME
+  caughtCount = 0; missedCount = 0
   items = []; basketContents = []; outroParticles = []
+  sleighFly = null; sleighSparkles = []
   tiltX = 0; rawTiltX = 0; touchX = null
   spawnTimer = 0; spawnInterval = 1100; playMs = 0
   basket.x = (canvas.width - basket.w) / 2
@@ -1142,6 +1185,7 @@ function runCountdown(cb) {
 function beginPlay() {
   gameRunning = true
   lastTime = performance.now()
+  startSleighFlyby()          // sanie przelatują przez ekran na starcie rundy
   startMusic()
   timerInterval = setInterval(() => {
     timeLeft--
@@ -1154,7 +1198,7 @@ function beginPlay() {
 
 function updateHUD() {
   document.getElementById('score-val').textContent = score
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 1; i <= 5; i++) {
     document.getElementById('h' + i).classList.toggle('lost', i > lives)
   }
 }
@@ -1183,8 +1227,8 @@ function pralineSpeed() {
   const el = GAME_TIME - timeLeft
   const ramp = el < 12 ? el * 0.06 : 0.72 + (el - 12) * 0.24
   const r = Math.random()
-  const variety = r * r * r * 6.5   // bias ku wolnym, rzadkie bardzo szybkie
-  return 1.5 + variety + ramp       // baza podniesiona (1.1→1.5): żwawszy start (~+35%)
+  const variety = r * r * 5.5        // mniej skrajnie wolnych na starcie (r² zamiast r³)
+  return 2.2 + variety + ramp        // baza 1.5→2.2: żwawszy początek rozgrywki
 }
 
 function gameLoop(ts) {
@@ -1235,6 +1279,7 @@ function gameLoop(ts) {
       item.x + item.w * 0.4 < basket.x + basket.w
     ) {
       score += item.def.pts
+      caughtCount++
       updateHUD()
       playCatch()
       showCatchLabel('+' + item.def.pts, item.x + item.w / 2, basket.y - 10)
@@ -1247,6 +1292,7 @@ function gameLoop(ts) {
     // Pominięte — przeleciało poniżej koszyka (nad paskiem HUD)
     if (item.y > basket.y + basket.h + 20) {
       lives--
+      missedCount++
       updateHUD()
       playMiss()
       toRemove.push(i)
@@ -1255,11 +1301,22 @@ function gameLoop(ts) {
   }
   toRemove.forEach(i => items.splice(i, 1))
 
+  // Sanie — przelot + emisja iskier za saniami
+  if (sleighFly) {
+    sleighFly.x += sleighFly.vx * (dt / 16)
+    for (let k = 0; k < 2; k++) sleighSparkles.push(new Sparkle(sleighFly.x + sleighFly.w * 0.18, sleighFly.y + sleighFly.h * 0.55))
+    if (sleighFly.x > canvas.width + 20) sleighFly = null
+  }
+  sleighSparkles = sleighSparkles.filter(p => { p.update(); return !p.dead })
+
   // Draw
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   drawBlik()
   drawItems()
   drawBasket()
+  // sanie ponad sceną (krótki świąteczny akcent na starcie)
+  sleighSparkles.forEach(p => p.draw(ctx))
+  if (sleighFly && sleighImg.complete) ctx.drawImage(sleighImg, sleighFly.x, sleighFly.y, sleighFly.w, sleighFly.h)
 
   requestAnimationFrame(gameLoop)
 }
@@ -1376,11 +1433,13 @@ function runOutro() {
 }
 
 function showResult() {
+  // Nagroda = % złapanych misiów (ze wszystkich, które spadły). Każdy, kto skończył → min. 5%.
+  const resolved = caughtCount + missedCount
+  const rate = resolved > 0 ? caughtCount / resolved : 0
   let pct, code, title
-  if (score >= 300) { pct = 20; code = 'LINDT20XMAS'; title = 'Outstanding!' }
-  else if (score >= 150) { pct = 15; code = 'LINDT15XMAS'; title = 'Excellent!' }
-  else if (score >= 50) { pct = 10; code = 'LINDT10XMAS'; title = 'Well done!' }
-  else { pct = 5; code = 'LINDT5XMAS'; title = 'Good effort!' }
+  if (rate >= 0.75)      { pct = 15; code = 'LINDT15XMAS'; title = 'Excellent!' }
+  else if (rate >= 0.50) { pct = 10; code = 'LINDT10XMAS'; title = 'Well done!' }
+  else                   { pct = 5;  code = 'LINDT5XMAS';  title = 'Good effort!' }
 
   document.getElementById('result-title').textContent = title
   document.getElementById('result-score-val').textContent = score
@@ -1662,7 +1721,7 @@ fwCanvas.width = container.offsetWidth
 fwCanvas.height = container.offsetHeight
 setupTouch()
 setupTapGate()
-scheduleSanta()
+// scheduleSanta()  // ZASTĄPIONE przelotem sań (sleigh.png) na starcie rundy — patrz startSleighFlyby()
 if (FIREWORKS_ON) scheduleFireworks()
 
 // Pre-load images on start
