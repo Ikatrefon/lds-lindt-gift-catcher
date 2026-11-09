@@ -103,6 +103,26 @@
     animation: tgPulse 1.4s ease-in-out infinite;
   }
   #tap-gate .tg-hint { color: #d4956a; font-size: 0.85rem; letter-spacing: 0.05em; }
+  #tap-gate .tg-controls {
+    margin-top: 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    background: rgba(187,151,80,0.14);
+    border: 1.5px solid rgba(187,151,80,0.6);
+    border-radius: 18px;
+    padding: 18px 24px;
+    max-width: 320px;
+  }
+  #tap-gate .tg-swipe { width: 118px; height: 58px; }
+  #tap-gate .tg-swipe .touch { animation: tgSlide 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes tgSlide {
+    0%, 100% { transform: translateX(-20px); }
+    50%      { transform: translateX(20px); }
+  }
+  #tap-gate .tg-controls-txt {
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    color: #f3e3c0; font-size: 1.02rem; line-height: 1.45; letter-spacing: 0.02em;
+  }
+  #tap-gate .tg-controls-txt b { color: #ffffff; }
   @keyframes tgPulse {
     0%, 100% { opacity: 0.55; transform: scale(1); }
     50%      { opacity: 1;    transform: scale(1.06); }
@@ -597,6 +617,20 @@
     <div class="tg-title">Gift Catcher</div>
     <div class="tg-cta">Tap to Start</div>
     <div class="tg-hint">Sound on</div>
+    <div class="tg-controls">
+      <svg class="tg-swipe" viewBox="0 0 140 70" fill="none" aria-hidden="true">
+        <!-- poziomy dwukierunkowy ślad -->
+        <path d="M24 50 H116" stroke="#BB9750" stroke-width="4" stroke-linecap="round"/>
+        <path d="M24 50 l15 -11 M24 50 l15 11" stroke="#BB9750" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M116 50 l-15 -11 M116 50 l-15 11" stroke="#BB9750" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- palec / dotyk (animowany lewo-prawo) -->
+        <g class="touch">
+          <circle cx="70" cy="24" r="17" stroke="#f5c842" stroke-width="2.5" opacity="0.5"/>
+          <circle cx="70" cy="24" r="10" fill="#f5c842"/>
+        </g>
+      </svg>
+      <div class="tg-controls-txt">Tilt your phone <b>or slide your finger</b><br>to move the basket</div>
+    </div>
   </div>
 
   <!-- START SCREEN -->
@@ -640,8 +674,6 @@
         <img class="life" id="h1" src="ELEMENTY/teddy-life.png" alt="">
         <img class="life" id="h2" src="ELEMENTY/teddy-life.png" alt="">
         <img class="life" id="h3" src="ELEMENTY/teddy-life.png" alt="">
-        <img class="life" id="h4" src="ELEMENTY/teddy-life.png" alt="">
-        <img class="life" id="h5" src="ELEMENTY/teddy-life.png" alt="">
       </div>
     </div>
   </div>
@@ -1018,7 +1050,7 @@ class Sparkle {
   constructor(x, y) {
     this.x = x + (Math.random() - 0.5) * 20
     this.y = y + (Math.random() - 0.5) * 34
-    this.vx = -0.3 - Math.random() * 0.7       // dryf do tyłu (sanie lecą w prawo)
+    this.vx = 0.3 + Math.random() * 0.7        // dryf do tyłu (sanie lecą w lewo)
     this.vy = (Math.random() - 0.5) * 0.7
     this.alpha = 1
     this.size = 1.4 + Math.random() * 2.6
@@ -1042,7 +1074,7 @@ function startSleighFlyby() {
   const h = Math.min(canvas.height * 0.17, 150)
   const ratio = (sleighImg.naturalWidth && sleighImg.naturalHeight) ? sleighImg.naturalWidth / sleighImg.naturalHeight : 0.9
   const w = h * ratio
-  sleighFly = { x: -w - 20, y: canvas.height * 0.10, w, h, vx: (canvas.width + w + 60) / 125 }  // przelot ~2 s
+  sleighFly = { x: canvas.width + 20, y: canvas.height * 0.10, w, h, vx: -(canvas.width + w + 60) / 210 }  // prawo→lewo, ~3,5 s
   sleighSparkles = []
 }
 
@@ -1103,7 +1135,7 @@ function drawBlik() {
   ctx.restore()
 }
 let score = 0
-let lives = 5
+let lives = 3
 let caughtCount = 0      // złapane misie (licznik do nagrody = % złapanych)
 let missedCount = 0      // pominięte misie
 let timeLeft = GAME_TIME
@@ -1130,12 +1162,12 @@ function resize() {
 }
 
 function startGame() {
-  score = 0; lives = 5; timeLeft = GAME_TIME
+  score = 0; lives = 3; timeLeft = GAME_TIME
   caughtCount = 0; missedCount = 0
   items = []; basketContents = []; outroParticles = []
   sleighFly = null; sleighSparkles = []
   tiltX = 0; rawTiltX = 0; touchX = null
-  spawnTimer = 0; spawnInterval = 1100; playMs = 0
+  spawnTimer = 0; spawnInterval = 850; playMs = 0
   basket.x = (canvas.width - basket.w) / 2
 
   updateHUD()
@@ -1198,7 +1230,7 @@ function beginPlay() {
 
 function updateHUD() {
   document.getElementById('score-val').textContent = score
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= 3; i++) {
     document.getElementById('h' + i).classList.toggle('lost', i > lives)
   }
 }
@@ -1227,8 +1259,8 @@ function pralineSpeed() {
   const el = GAME_TIME - timeLeft
   const ramp = el < 12 ? el * 0.06 : 0.72 + (el - 12) * 0.24
   const r = Math.random()
-  const variety = r * r * 5.5        // mniej skrajnie wolnych na starcie (r² zamiast r³)
-  return 2.2 + variety + ramp        // baza 1.5→2.2: żwawszy początek rozgrywki
+  const variety = r * r * 6.0        // mniej skrajnie wolnych na starcie (r² zamiast r³)
+  return 2.6 + variety + ramp        // baza 2.2→2.6: szybsze opadanie
 }
 
 function gameLoop(ts) {
@@ -1260,7 +1292,7 @@ function gameLoop(ts) {
     spawnTimer = 0
     const el = GAME_TIME - timeLeft
     // gęstość: spokojnie na start, od 12 s bardzo gęsto
-    spawnInterval = Math.max(220, el < 12 ? 1100 - el * 40 : 620 - (el - 12) * 55)
+    spawnInterval = Math.max(180, el < 12 ? 850 - el * 40 : 500 - (el - 12) * 55)
     spawnItem()
   }
 
@@ -1304,8 +1336,8 @@ function gameLoop(ts) {
   // Sanie — przelot + emisja iskier za saniami
   if (sleighFly) {
     sleighFly.x += sleighFly.vx * (dt / 16)
-    for (let k = 0; k < 2; k++) sleighSparkles.push(new Sparkle(sleighFly.x + sleighFly.w * 0.18, sleighFly.y + sleighFly.h * 0.55))
-    if (sleighFly.x > canvas.width + 20) sleighFly = null
+    for (let k = 0; k < 2; k++) sleighSparkles.push(new Sparkle(sleighFly.x + sleighFly.w * 0.82, sleighFly.y + sleighFly.h * 0.55))
+    if (sleighFly.x < -sleighFly.w - 20) sleighFly = null
   }
   sleighSparkles = sleighSparkles.filter(p => { p.update(); return !p.dead })
 
@@ -1314,7 +1346,7 @@ function gameLoop(ts) {
   drawBlik()
   drawItems()
   drawBasket()
-  // sanie ponad sceną (krótki świąteczny akcent na starcie)
+  // sanie ponad sceną (krótki świąteczny akcent na starcie) — bez lustra (logo Lindt czytelne)
   sleighSparkles.forEach(p => p.draw(ctx))
   if (sleighFly && sleighImg.complete) ctx.drawImage(sleighImg, sleighFly.x, sleighFly.y, sleighFly.w, sleighFly.h)
 
