@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Gift Catcher – Lindt</title>
 <style>
   @font-face {
@@ -127,12 +127,6 @@
   /* instrukcja sterowania (ekran „Enable Tilt Control") — BEZ ramki */
   .ctrl-divider { width: 72%; max-width: 280px; height: 1px; background: rgba(187,151,80,0.45); margin: 6px 0 2px; }
   .ctrl-hint { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 320px; }
-  .ctrl-swipe { width: 118px; height: 58px; }
-  .ctrl-swipe .touch { animation: tgSlide 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-  @keyframes tgSlide {
-    0%, 100% { transform: translateX(-20px); }
-    50%      { transform: translateX(20px); }
-  }
   .ctrl-hint-txt {
     font-family: 'Optima', 'Segoe UI', sans-serif;
     color: #e9cfa0; font-size: 1.02rem; line-height: 1.45; letter-spacing: 0.02em;
@@ -626,18 +620,7 @@
     <button class="btn-perm" onclick="requestIOSPermission()">Enable Tilt Control</button>
     <div class="ctrl-divider"></div>
     <div class="ctrl-hint">
-      <svg class="ctrl-swipe" viewBox="0 0 140 70" fill="none" aria-hidden="true">
-        <!-- poziomy dwukierunkowy ślad -->
-        <path d="M24 50 H116" stroke="#BB9750" stroke-width="4" stroke-linecap="round"/>
-        <path d="M24 50 l15 -11 M24 50 l15 11" stroke="#BB9750" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M116 50 l-15 -11 M116 50 l-15 11" stroke="#BB9750" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- palec / dotyk (animowany lewo-prawo) -->
-        <g class="touch">
-          <circle cx="70" cy="24" r="17" stroke="#f5c842" stroke-width="2.5" opacity="0.5"/>
-          <circle cx="70" cy="24" r="10" fill="#f5c842"/>
-        </g>
-      </svg>
-      <div class="ctrl-hint-txt">Tilt your phone <b>or slide your finger</b><br>to move the basket</div>
+      <div class="ctrl-hint-txt">Tilt your phone<br><b>or slide your finger</b><br>to move the basket</div>
     </div>
   </div>
 
@@ -1821,6 +1804,12 @@ if (window.matchMedia) {
   if (mqL.addEventListener) mqL.addEventListener('change', handleOrientation)
   else if (mqL.addListener) mqL.addListener(handleOrientation)
 }
+
+// Blokada pinch-zoom: iOS czyta gest jako zoom, a po zoomie gra się rozjeżdża.
+// gesture* = zdarzenia pinch Safari (meta user-scalable iOS ignoruje); łapiemy też zoom dwoma palcami w touchmove.
+;['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
+  document.addEventListener(ev, e => e.preventDefault(), { passive: false }))
+document.addEventListener('touchmove', e => { if (e.touches && e.touches.length > 1) e.preventDefault() }, { passive: false })
 resize()
 fwCanvas.width = container.offsetWidth
 fwCanvas.height = container.offsetHeight
