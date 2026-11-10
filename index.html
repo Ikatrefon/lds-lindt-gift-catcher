@@ -70,6 +70,27 @@
     100% { transform: scale(1);   opacity: 0.95; }
   }
 
+  /* pauza przy obrocie telefonu do poziomu */
+  #landscape-pause {
+    position: absolute; inset: 0; z-index: 60;
+    background: rgba(10,3,0,0.96);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 22px; padding: 32px; text-align: center;
+  }
+  #landscape-pause.hidden { display: none; }
+  #landscape-pause .lp-rotate { width: 78px; height: 78px; animation: lpRot 2.2s ease-in-out infinite; transform-origin: center; }
+  @keyframes lpRot { 0%, 45% { transform: rotate(-90deg); } 70%, 100% { transform: rotate(0deg); } }
+  #landscape-pause .lp-title {
+    font-family: 'Optima','Segoe UI',sans-serif; color: #fff;
+    font-size: 3rem; letter-spacing: 0.2em; font-weight: 700;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  }
+  #landscape-pause .lp-text {
+    font-family: 'Optima','Segoe UI',sans-serif; color: #e9cfa0;
+    font-size: 1.1rem; line-height: 1.45; max-width: 320px; letter-spacing: 0.02em;
+  }
+  #landscape-pause .lp-text b { color: #ffffff; }
+
   /* ekran „Tap to Start" (wariant /piano-tap.html) — pierwszy gest odblokowuje dźwięk */
   #tap-gate {
     position: absolute;
@@ -678,6 +699,18 @@
   <!-- odliczanie 3-2-1 przed startem -->
   <div id="countdown" class="hidden"><span></span></div>
 
+  <!-- pauza przy obrocie do poziomu -->
+  <div id="landscape-pause" class="hidden">
+    <svg class="lp-rotate" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <rect x="23" y="7" width="18" height="34" rx="3.5" stroke="#f5c842" stroke-width="2.5"/>
+      <line x1="29" y1="11" x2="35" y2="11" stroke="#f5c842" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M12 52 a20 20 0 0 1 40 0" stroke="#BB9750" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M52 52 l-5 -2 M52 52 l2 -5" stroke="#BB9750" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="lp-title">PAUSE</div>
+    <div class="lp-text">Rotate your phone to <b>portrait</b> to continue</div>
+  </div>
+
   <!-- RESULT SCREEN -->
   <div id="result-screen" class="screen hidden">
     <img src="ELEMENTY/Lindt-logo.png" class="logo" alt="Lindt">
@@ -1135,6 +1168,9 @@ let caughtCount = 0      // złapane misie (licznik do nagrody = % złapanych)
 let missedCount = 0      // pominięte misie
 let timeLeft = GAME_TIME
 let gameRunning = false
+let paused = false              // pauza przy obrocie do poziomu
+let musicWasPlaying = false
+let resumeTimer = null
 let items = []
 let basket = { x: 0, y: 0, w: 147, h: 80 }
 let basketContents = []
@@ -1154,6 +1190,38 @@ function resize() {
   const onBlik = blikY() - basket.h + 10
   basket.y = Math.min(onBlik, canvas.height - HUD_H - basket.h - 8)
   basket.x = Math.min(Math.max(basket.x, 0), canvas.width - basket.w)
+}
+
+// ── Pauza przy obrocie telefonu do poziomu ──
+function isLandscape() {
+  if (window.matchMedia) return window.matchMedia('(orientation: landscape)').matches
+  return window.innerWidth > window.innerHeight
+}
+function pauseGame() {
+  if (!gameRunning || paused) return
+  paused = true
+  musicWasPlaying = !bgMusic.paused
+  if (musicWasPlaying) { try { bgMusic.pause() } catch(e) {} }
+  document.getElementById('landscape-pause').classList.remove('hidden')
+}
+function resumeGame() {
+  if (!paused) return
+  paused = false
+  lastTime = performance.now()
+  document.getElementById('landscape-pause').classList.add('hidden')
+  if (musicWasPlaying && MUSIC_ON) { try { const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {} }
+}
+function handleOrientation() {
+  if (isLandscape()) {
+    if (resumeTimer) { clearTimeout(resumeTimer); resumeTimer = null }
+    if (gameRunning && !paused) pauseGame()
+  } else if (paused) {
+    if (resumeTimer) clearTimeout(resumeTimer)
+    resumeTimer = setTimeout(() => {                 // 1 s opóźnienia po powrocie do pionu
+      resumeTimer = null
+      if (!isLandscape()) resumeGame()
+    }, 1000)
+  }
 }
 
 function startGame() {
@@ -1215,6 +1283,7 @@ function beginPlay() {
   startSleighFlyby()          // sanie przelatują przez ekran na starcie rundy
   startMusic()
   timerInterval = setInterval(() => {
+    if (paused) return          // obrót do poziomu → czas stoi
     timeLeft--
     document.getElementById('time-val').textContent = Math.max(0, timeLeft)
     if (timeLeft <= 5) document.getElementById('time-display').classList.add('low')
@@ -1260,6 +1329,7 @@ function pralineSpeed() {
 
 function gameLoop(ts) {
   if (!gameRunning) return
+  if (paused) { lastTime = ts; requestAnimationFrame(gameLoop); return }   // zamrożona scena podczas pauzy
   const dt = Math.min(ts - lastTime, 50)
   lastTime = ts
   playMs += dt
@@ -1743,7 +1813,14 @@ window.addEventListener('resize', () => {
   resize()
   fwCanvas.width = container.offsetWidth
   fwCanvas.height = container.offsetHeight
+  handleOrientation()
 })
+window.addEventListener('orientationchange', handleOrientation)
+if (window.matchMedia) {
+  const mqL = window.matchMedia('(orientation: landscape)')
+  if (mqL.addEventListener) mqL.addEventListener('change', handleOrientation)
+  else if (mqL.addListener) mqL.addListener(handleOrientation)
+}
 resize()
 fwCanvas.width = container.offsetWidth
 fwCanvas.height = container.offsetHeight
