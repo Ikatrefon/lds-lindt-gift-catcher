@@ -428,7 +428,7 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
+    transition: background 0.25s ease, transform 0.1s, opacity 0.32s ease;
   }
   #result-screen .btn-copy:active { transform: scale(0.95); }
   #result-screen .btn-copy.copied { background: #BB9750; color: #1a0600; border-color: #BB9750; }
@@ -442,7 +442,6 @@
     font-size: 15px;
     letter-spacing: 0.16em;
     cursor: default;
-    animation: ctaPop 0.3s ease-out;
   }
   /* po 2 s: "SHOP NOW" = złoty button (klikalny) */
   #result-screen .btn-copy.shop {
@@ -452,7 +451,6 @@
     box-shadow: 0 4px 20px rgba(245,200,66,0.4), 0 2px 4px rgba(0,0,0,0.4);
     cursor: pointer;
   }
-  @keyframes ctaPop { from { transform: scale(0.88); opacity: 0.5; } to { transform: scale(1); opacity: 1; } }
   #result-screen .result-note {
     color: #ffffff;
     font-size: 11.52px;
@@ -1549,7 +1547,7 @@ function showResult() {
   document.getElementById('result-pct').textContent = pct + '%'
   document.getElementById('result-code').textContent = code
   const cb = document.getElementById('btn-copy')
-  if (cb) { clearCopyTimers(); cb.textContent = 'Copy code'; cb.classList.remove('copied', 'cta', 'shop') }   // reset przycisku
+  if (cb) { clearCopyTimers(); cb.textContent = 'Copy code'; cb.classList.remove('copied', 'cta', 'shop'); cb.style.opacity = '1' }   // reset przycisku
   document.getElementById('hud').style.display = 'none'   // HUD chowamy dopiero teraz (był widoczny przez outro)
   document.getElementById('result-screen').classList.remove('hidden')
 }
@@ -1568,16 +1566,24 @@ function onCopyBtn() {
 function copyCode() {
   const code = document.getElementById('result-code').textContent.trim()
   const btn = document.getElementById('btn-copy')
+  // miękkie przejście: wygaś (opacity) → podmień tekst/styl → rozjaśnij (transition opacity 0.32s w CSS)
+  const toShopNow = () => {
+    if (!btn.classList.contains('cta')) return
+    btn.style.opacity = '0'
+    copyTimers.push(setTimeout(() => {
+      btn.classList.add('shop'); btn.textContent = 'SHOP NOW'; btn.style.opacity = '1'
+    }, 320))
+  }
+  const toUseCode = () => {
+    btn.style.opacity = '0'
+    copyTimers.push(setTimeout(() => {
+      btn.classList.remove('copied'); btn.classList.add('cta'); btn.textContent = 'USE YOUR CODE'; btn.style.opacity = '1'
+      copyTimers.push(setTimeout(toShopNow, 2000))   // po 2 s → SHOP NOW
+    }, 320))
+  }
   const done = () => {
     btn.textContent = 'Code copied ✓'; btn.classList.add('copied')
-    copyTimers.push(setTimeout(() => {                 // po potwierdzeniu → większy przycisk CTA
-      btn.classList.remove('copied')
-      btn.classList.add('cta')
-      btn.textContent = 'USE YOUR CODE'
-      copyTimers.push(setTimeout(() => {               // po 2 s → SHOP NOW (dopiero teraz klikalne)
-        if (btn.classList.contains('cta')) { btn.textContent = 'SHOP NOW'; btn.classList.add('shop') }
-      }, 2000))
-    }, 1200))
+    copyTimers.push(setTimeout(toUseCode, 1200))     // po potwierdzeniu → USE YOUR CODE
   }
   const fallback = () => {
     const ta = document.createElement('textarea')
