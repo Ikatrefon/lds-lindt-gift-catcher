@@ -432,6 +432,18 @@
   }
   #result-screen .btn-copy:active { transform: scale(0.95); }
   #result-screen .btn-copy.copied { background: #BB9750; color: #1a0600; border-color: #BB9750; }
+  /* po skopiowaniu: wiekszy przycisk CTA do sklepu */
+  #result-screen .btn-copy.cta {
+    margin-top: 12px;
+    background: linear-gradient(90deg, #97702A 0%, #BB9750 50%, #97702A 100%);
+    color: #1a0600;
+    border: none;
+    font-size: 15px;
+    padding: 13px 42px;
+    box-shadow: 0 4px 20px rgba(245,200,66,0.4), 0 2px 4px rgba(0,0,0,0.4);
+    animation: ctaPop 0.3s ease-out;
+  }
+  @keyframes ctaPop { from { transform: scale(0.88); opacity: 0.5; } to { transform: scale(1); opacity: 1; } }
   #result-screen .result-note {
     color: #ffffff;
     font-size: 11.52px;
@@ -703,7 +715,7 @@
       <div class="discount-pct" id="result-pct">5%</div>
       <div class="discount-label">Discount on your purchase</div>
       <div class="discount-code" id="result-code">LINDT5XMAS</div>
-      <button class="btn-copy" id="btn-copy" onclick="copyCode()">Copy code</button>
+      <button class="btn-copy" id="btn-copy" onclick="onCopyBtn()">Copy code</button>
     </div>
     <div class="result-note">
       Use in participating Lindt stores or online.<br>Valid until 31.12.2026.
@@ -1526,9 +1538,19 @@ function showResult() {
   document.getElementById('result-pct').textContent = pct + '%'
   document.getElementById('result-code').textContent = code
   const cb = document.getElementById('btn-copy')
-  if (cb) { cb.textContent = 'Copy code'; cb.classList.remove('copied') }   // reset przycisku
+  if (cb) { clearCopyTimers(); cb.textContent = 'Copy code'; cb.classList.remove('copied', 'cta') }   // reset przycisku
   document.getElementById('hud').style.display = 'none'   // HUD chowamy dopiero teraz (był widoczny przez outro)
   document.getElementById('result-screen').classList.remove('hidden')
+}
+
+let copyTimers = []
+function clearCopyTimers() { copyTimers.forEach(clearTimeout); copyTimers = [] }
+
+// Klik przycisku wyniku: najpierw kopiuje kod; po skopiowaniu staje się CTA do sklepu.
+function onCopyBtn() {
+  const btn = document.getElementById('btn-copy')
+  if (btn.classList.contains('cta')) { window.open('https://www.lindt.de/', '_blank', 'noopener'); return }
+  copyCode()
 }
 
 function copyCode() {
@@ -1536,7 +1558,14 @@ function copyCode() {
   const btn = document.getElementById('btn-copy')
   const done = () => {
     btn.textContent = 'Code copied ✓'; btn.classList.add('copied')
-    setTimeout(() => { btn.textContent = 'Copy code'; btn.classList.remove('copied') }, 2000)
+    copyTimers.push(setTimeout(() => {                 // po potwierdzeniu → większy przycisk CTA
+      btn.classList.remove('copied')
+      btn.classList.add('cta')
+      btn.textContent = 'USE YOUR CODE'
+      copyTimers.push(setTimeout(() => {               // po 2 s → SHOP NOW
+        if (btn.classList.contains('cta')) btn.textContent = 'SHOP NOW'
+      }, 2000))
+    }, 1200))
   }
   const fallback = () => {
     const ta = document.createElement('textarea')
