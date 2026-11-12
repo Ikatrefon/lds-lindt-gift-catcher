@@ -432,16 +432,25 @@
   }
   #result-screen .btn-copy:active { transform: scale(0.95); }
   #result-screen .btn-copy.copied { background: #BB9750; color: #1a0600; border-color: #BB9750; }
-  /* po skopiowaniu: wiekszy przycisk CTA do sklepu */
+  /* po skopiowaniu: "USE YOUR CODE" = biały napis, NIE button */
   #result-screen .btn-copy.cta {
-    margin-top: 12px;
+    margin-top: 16px;
+    background: none;
+    border: none;
+    box-shadow: none;
+    color: #ffffff;
+    font-size: 15px;
+    letter-spacing: 0.16em;
+    cursor: default;
+    animation: ctaPop 0.3s ease-out;
+  }
+  /* po 2 s: "SHOP NOW" = złoty button (klikalny) */
+  #result-screen .btn-copy.shop {
     background: linear-gradient(90deg, #97702A 0%, #BB9750 50%, #97702A 100%);
     color: #1a0600;
-    border: none;
-    font-size: 15px;
     padding: 13px 42px;
     box-shadow: 0 4px 20px rgba(245,200,66,0.4), 0 2px 4px rgba(0,0,0,0.4);
-    animation: ctaPop 0.3s ease-out;
+    cursor: pointer;
   }
   @keyframes ctaPop { from { transform: scale(0.88); opacity: 0.5; } to { transform: scale(1); opacity: 1; } }
   #result-screen .result-note {
@@ -1317,6 +1326,8 @@ function spawnItem() {
 function pralineSpeed() {
   const el = GAME_TIME - timeLeft
   const ramp = el < 12 ? el * 0.06 : 0.72 + (el - 12) * 0.24
+  // ~18% misiów spada BARDZO szybko (trudne do złapania) — żeby wysoki wynik nie był łatwy
+  if (Math.random() < 0.18) return 9 + Math.random() * 4.5 + ramp
   const r = Math.random()
   const variety = r * r * 6.0        // mniej skrajnie wolnych na starcie (r² zamiast r³)
   return 3.0 + variety + ramp        // baza 2.6→3.0: jeszcze szybsze opadanie
