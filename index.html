@@ -1538,7 +1538,7 @@ function showResult() {
   document.getElementById('result-pct').textContent = pct + '%'
   document.getElementById('result-code').textContent = code
   const cb = document.getElementById('btn-copy')
-  if (cb) { clearCopyTimers(); cb.textContent = 'Copy code'; cb.classList.remove('copied', 'cta') }   // reset przycisku
+  if (cb) { clearCopyTimers(); cb.textContent = 'Copy code'; cb.classList.remove('copied', 'cta', 'shop') }   // reset przycisku
   document.getElementById('hud').style.display = 'none'   // HUD chowamy dopiero teraz (był widoczny przez outro)
   document.getElementById('result-screen').classList.remove('hidden')
 }
@@ -1549,7 +1549,8 @@ function clearCopyTimers() { copyTimers.forEach(clearTimeout); copyTimers = [] }
 // Klik przycisku wyniku: najpierw kopiuje kod; po skopiowaniu staje się CTA do sklepu.
 function onCopyBtn() {
   const btn = document.getElementById('btn-copy')
-  if (btn.classList.contains('cta')) { window.open('https://www.lindt.de/', '_blank', 'noopener'); return }
+  if (btn.classList.contains('shop')) { window.open('https://www.lindt.de/', '_blank', 'noopener'); return }
+  if (btn.classList.contains('cta')) return   // "USE YOUR CODE" — klikalne dopiero jako "SHOP NOW"
   copyCode()
 }
 
@@ -1562,8 +1563,8 @@ function copyCode() {
       btn.classList.remove('copied')
       btn.classList.add('cta')
       btn.textContent = 'USE YOUR CODE'
-      copyTimers.push(setTimeout(() => {               // po 2 s → SHOP NOW
-        if (btn.classList.contains('cta')) btn.textContent = 'SHOP NOW'
+      copyTimers.push(setTimeout(() => {               // po 2 s → SHOP NOW (dopiero teraz klikalne)
+        if (btn.classList.contains('cta')) { btn.textContent = 'SHOP NOW'; btn.classList.add('shop') }
       }, 2000))
     }, 1200))
   }
