@@ -634,7 +634,7 @@
 
   <!-- iOS PERMISSION -->
   <div id="ios-perm" class="hidden">
-    <img src="ELEMENTY/Lindt-logo.png" style="width:80px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
+    <img src="ELEMENTY/Lindt_logo.png" style="width:80px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
     <p>To control the basket with your phone's tilt, we need access to motion sensors.</p>
     <button class="btn-perm" onclick="requestIOSPermission()">Enable Tilt Control</button>
     <div class="ctrl-divider"></div>
@@ -645,7 +645,7 @@
 
   <!-- TAP TO START (wariant /piano-tap.html) -->
   <div id="tap-gate" class="hidden">
-    <img src="ELEMENTY/Lindt-logo.png" style="width:90px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
+    <img src="ELEMENTY/Lindt_logo.png" style="width:90px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
     <div class="tg-title">Gift Catcher</div>
     <div class="tg-cta">Tap to Start</div>
     <div class="tg-hint">Sound on</div>
@@ -653,7 +653,7 @@
 
   <!-- START SCREEN -->
   <div id="start-screen" class="screen">
-    <img src="ELEMENTY/Lindt-logo.png" class="logo" alt="Lindt">
+    <img src="ELEMENTY/Lindt_logo.png" class="logo" alt="Lindt">
     <h1>Gift<br>Catcher</h1>
     <div class="subtitle">Catch & Win</div>
 
@@ -715,16 +715,16 @@
 
   <!-- RESULT SCREEN -->
   <div id="result-screen" class="screen hidden">
-    <img src="ELEMENTY/Lindt-logo.png" class="logo" alt="Lindt">
+    <img src="ELEMENTY/Lindt_logo.png" class="logo" alt="Lindt">
     <h2 id="result-title">Well done!</h2>
     <div class="result-score">Your score: <strong id="result-score-val">0</strong></div>
-    <div class="discount-box">
+    <div class="discount-box" id="discount-box">
       <div class="discount-pct" id="result-pct">5%</div>
       <div class="discount-label">Discount on your purchase</div>
       <div class="discount-code" id="result-code">LINDT5XMAS</div>
       <button class="btn-copy" id="btn-copy" onclick="onCopyBtn()">Copy code</button>
     </div>
-    <div class="result-note">
+    <div class="result-note" id="result-note">
       Use in participating Lindt stores or online.<br>Valid until 31.12.2026.
     </div>
     <button class="btn-play-again" onclick="resetGame()">Play Again</button>
@@ -1115,6 +1115,7 @@ function loadImages(cb) {
     const bw = Math.min(canvas.width * 0.34, 147)
     basket.w = bw
     basket.h = bw * (basketImg.naturalHeight / basketImg.naturalWidth)
+    resize()   // przelicz pozycję koszyka z realną wysokością (inaczej zostaje luka do HUD)
     checkDone()
   }
   basketImg.src = 'ELEMENTY/basket.png'
@@ -1152,8 +1153,10 @@ const BLIK_WHALF = 0.48       // pół-szerokość smugi (ułamek szerokości)
 const BLIK_HHALF = 0.024      // pół-wysokość smugi (ułamek wysokości)
 function blikY() { return BLIK_FRAC * canvas.height }
 function drawBlik() {
-  const y = blikY(), cx = canvas.width / 2
-  const hw = canvas.width * BLIK_WHALF, hh = Math.max(10, canvas.height * BLIK_HHALF)
+  // glow przypięty do DOLNEJ krawędzi koszyka — porusza się razem z nim (poziomo i pionowo)
+  const cx = basket.x + basket.w / 2
+  const y = basket.y + basket.h - 2
+  const hw = basket.w * 0.70, hh = Math.max(8, basket.h * 0.34)
   ctx.save()
   ctx.translate(cx, y); ctx.scale(hw, hh)
   const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1)
@@ -1188,9 +1191,8 @@ let spawnInterval = 950    // bazowy odstęp spawnu — krótszy = więcej spada
 function resize() {
   canvas.width = container.offsetWidth
   canvas.height = container.offsetHeight
-  // dno koszyka na linii blika (mała zakładka), smuga widoczna pod nim; nie niżej niż nad paskiem HUD
-  const onBlik = blikY() - basket.h + 10
-  basket.y = Math.min(onBlik, canvas.height - HUD_H - basket.h - 8)
+  // koszyk nisko — tuż nad paskiem HUD (glow przypięty do jego dolnej krawędzi, patrz drawBlik)
+  basket.y = canvas.height - HUD_H - basket.h - 4
   basket.x = Math.min(Math.max(basket.x, 0), canvas.width - basket.w)
 }
 
@@ -1444,18 +1446,18 @@ function drawBasket() {
     ctx.fill()
   }
 
-  // Draw caught items seated in the open top of the basket.
-  // Anchor each teddy's BOTTOM at the fill-line and clip only BELOW it:
-  // bottoms sink into the box, heads stay whole (never sliced at the rim).
+  // Złapane misie rysowane W ŚRODKU pudełka: przycięte do otwartego wierzchu
+  // (od górnej krawędzi pudełka basket.y do linii wypełnienia) — NIE wystają nad rant.
   if (basketContents.length > 0) {
     const iw = 17
     const gap = 3
     const cols = 5
-    const rowStep = 13                        // each higher row is raised this much
-    const fillLine = basket.y + basket.h * 0.40  // linia otwartego wierzchu nowego pudełka (misie siadają tutaj)
+    const rowStep = 9                         // delikatne nawarstwianie (mieści się we wnętrzu)
+    const openTop = basket.y + basket.h * 0.08   // górna krawędź otwartego wierzchu
+    const fillLine = basket.y + basket.h * 0.52  // dno, na którym siadają misie (w pudełku)
     ctx.save()
     ctx.beginPath()
-    ctx.rect(basket.x + 6, 0, basket.w - 12, fillLine)  // top = 0 → no head clipping
+    ctx.rect(basket.x + 6, openTop, basket.w - 12, fillLine - openTop)  // clip do WNĘTRZA pudełka
     ctx.clip()
     basketContents.forEach((bi, idx) => {
       const col = idx % cols
@@ -1534,20 +1536,31 @@ function runOutro() {
 }
 
 function showResult() {
-  // Nagroda = % złapanych misiów (ze wszystkich, które spadły). Każdy, kto skończył → min. 5%.
+  // Nagroda = % złapanych ze wszystkich spadłych misiów (złapane + pominięte).
   const resolved = caughtCount + missedCount
   const rate = resolved > 0 ? caughtCount / resolved : 0
-  let pct, code, title
-  if (rate >= 0.75)      { pct = 15; code = 'LINDT15XMAS'; title = 'Excellent!' }
-  else if (rate >= 0.50) { pct = 10; code = 'LINDT10XMAS'; title = 'Well done!' }
-  else                   { pct = 5;  code = 'LINDT5XMAS';  title = 'Good effort!' }
-
-  document.getElementById('result-title').textContent = title
-  document.getElementById('result-score-val').textContent = score
-  document.getElementById('result-pct').textContent = pct + '%'
-  document.getElementById('result-code').textContent = code
+  const box = document.getElementById('discount-box')
+  const note = document.getElementById('result-note')
   const cb = document.getElementById('btn-copy')
-  if (cb) { clearCopyTimers(); cb.textContent = 'Copy code'; cb.classList.remove('copied', 'cta', 'shop'); cb.style.opacity = '1' }   // reset przycisku
+  if (cb) { clearCopyTimers(); cb.textContent = 'Copy code'; cb.classList.remove('copied', 'cta', 'shop'); cb.style.opacity = '1' }
+  document.getElementById('result-score-val').textContent = score
+
+  if (caughtCount === 0) {
+    // skończył grę, ale nie złapał ani jednego misia → TRY AGAIN (bez zniżki)
+    document.getElementById('result-title').textContent = 'Try again!'
+    box.style.display = 'none'
+    note.innerHTML = "You didn't catch any chocolate.<br>Give it another go!"
+  } else {
+    let pct, code, title
+    if (rate > 0.75)      { pct = 15; code = 'LINDT15XMAS'; title = 'Excellent!' }   // >75% złapanych
+    else if (rate > 0.50) { pct = 10; code = 'LINDT10XMAS'; title = 'Well done!' }   // >50% złapanych
+    else                  { pct = 5;  code = 'LINDT5XMAS';  title = 'Good effort!' }  // skończył → min. 5%
+    document.getElementById('result-title').textContent = title
+    box.style.display = ''
+    note.innerHTML = 'Use in participating Lindt stores or online.<br>Valid until 31.12.2026.'
+    document.getElementById('result-pct').textContent = pct + '%'
+    document.getElementById('result-code').textContent = code
+  }
   document.getElementById('hud').style.display = 'none'   // HUD chowamy dopiero teraz (był widoczny przez outro)
   document.getElementById('result-screen').classList.remove('hidden')
 }
