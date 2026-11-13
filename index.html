@@ -1454,9 +1454,10 @@ function drawBasket() {
     const cols = 5
     const rowStep = 6
     const CLIP_FROM_TOP = 27                      // px od górnej krawędzi koszyka
+    const LIFT = 19                               // przesunięcie złapanych misiów w górę (55 w górę − 36 w dół)
     ctx.save()
     ctx.beginPath()
-    ctx.rect(basket.x + 4, basket.y, basket.w - 8, CLIP_FROM_TOP)   // clip: górna krawędź → 27 px
+    ctx.rect(basket.x + 4, basket.y - LIFT, basket.w - 8, CLIP_FROM_TOP)   // okno clipu przesunięte w górę o LIFT
     ctx.clip()
     basketContents.forEach((bi, idx) => {
       const col = idx % cols
@@ -1466,7 +1467,7 @@ function drawBasket() {
       const rowW = rowCount * (iw + gap) - gap
       const ih = iw * bi.aspect
       const ix = basket.x + (basket.w - rowW) / 2 + col * (iw + gap)
-      const iy = basket.y - row * rowStep         // góra misia przy górnej krawędzi; dół wchodzi poniżej 27 px (przycięty)
+      const iy = basket.y - LIFT - row * rowStep  // misie wyżej o LIFT; dół przycięty na linii okna
       ctx.globalAlpha = 0.98
       ctx.drawImage(bi.img, ix, iy, iw, ih)
     })
