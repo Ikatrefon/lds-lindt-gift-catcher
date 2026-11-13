@@ -476,6 +476,9 @@
     margin-bottom: 34px;              /* trochę wyżej od dolnej krawędzi */
   }
   .btn-play-again:active { transform: scale(0.96); }
+  /* ekran TRY AGAIN: tytuł + wynik wyśrodkowane w pionie (Play Again wraca do grupy) */
+  #result-screen.try-again { justify-content: center; }
+  #result-screen.try-again .btn-play-again { margin-top: 28px; }
 
   /* ── CATCH FLASH ── */
   .catch-flash {
@@ -1539,6 +1542,7 @@ function showResult() {
   // Nagroda = % złapanych ze wszystkich spadłych misiów (złapane + pominięte).
   const resolved = caughtCount + missedCount
   const rate = resolved > 0 ? caughtCount / resolved : 0
+  const rs = document.getElementById('result-screen')
   const box = document.getElementById('discount-box')
   const note = document.getElementById('result-note')
   const cb = document.getElementById('btn-copy')
@@ -1546,11 +1550,14 @@ function showResult() {
   document.getElementById('result-score-val').textContent = score
 
   if (caughtCount === 0) {
-    // skończył grę, ale nie złapał ani jednego misia → TRY AGAIN (bez zniżki)
+    // skończył grę, ale nie złapał ani jednego misia → TRY AGAIN (bez zniżki, bez tekstu, wyśrodkowane)
     document.getElementById('result-title').textContent = 'Try again!'
     box.style.display = 'none'
-    note.innerHTML = "You didn't catch any chocolate.<br>Give it another go!"
+    note.style.display = 'none'
+    rs.classList.add('try-again')
   } else {
+    rs.classList.remove('try-again')
+    note.style.display = ''
     let pct, code, title
     if (rate > 0.75)      { pct = 15; code = 'LINDT15XMAS'; title = 'Excellent!' }   // >75% złapanych
     else if (rate > 0.50) { pct = 10; code = 'LINDT10XMAS'; title = 'Well done!' }   // >50% złapanych
