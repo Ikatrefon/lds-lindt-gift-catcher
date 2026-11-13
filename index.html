@@ -1446,18 +1446,17 @@ function drawBasket() {
     ctx.fill()
   }
 
-  // Złapane misie rysowane W ŚRODKU pudełka: przycięte do otwartego wierzchu
-  // (od górnej krawędzi pudełka basket.y do linii wypełnienia) — NIE wystają nad rant.
+  // Złapane misie: DÓŁ misiów przycięty dokładnie 27 px od górnej krawędzi koszyka
+  // (wszystko poniżej basket.y+27 ukryte → dolna część chowa się za ścianką = wrażenie, że są w środku).
   if (basketContents.length > 0) {
-    const iw = 17
-    const gap = 3
+    const iw = 23
+    const gap = 2
     const cols = 5
-    const rowStep = 9                         // delikatne nawarstwianie (mieści się we wnętrzu)
-    const openTop = basket.y + basket.h * 0.08   // górna krawędź otwartego wierzchu
-    const fillLine = basket.y + basket.h * 0.52  // dno, na którym siadają misie (w pudełku)
+    const rowStep = 6
+    const CLIP_FROM_TOP = 27                      // px od górnej krawędzi koszyka
     ctx.save()
     ctx.beginPath()
-    ctx.rect(basket.x + 6, openTop, basket.w - 12, fillLine - openTop)  // clip do WNĘTRZA pudełka
+    ctx.rect(basket.x + 4, basket.y, basket.w - 8, CLIP_FROM_TOP)   // clip: górna krawędź → 27 px
     ctx.clip()
     basketContents.forEach((bi, idx) => {
       const col = idx % cols
@@ -1467,8 +1466,8 @@ function drawBasket() {
       const rowW = rowCount * (iw + gap) - gap
       const ih = iw * bi.aspect
       const ix = basket.x + (basket.w - rowW) / 2 + col * (iw + gap)
-      const iy = fillLine - ih - row * rowStep
-      ctx.globalAlpha = 0.97
+      const iy = basket.y - row * rowStep         // góra misia przy górnej krawędzi; dół wchodzi poniżej 27 px (przycięty)
+      ctx.globalAlpha = 0.98
       ctx.drawImage(bi.img, ix, iy, iw, ih)
     })
     ctx.restore()
