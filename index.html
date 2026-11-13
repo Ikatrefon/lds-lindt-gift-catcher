@@ -42,7 +42,7 @@
     position: absolute;
     inset: 0;
     z-index: 0;
-    background: url('ELEMENTY/LindtTeddyGame.png') center/cover no-repeat #8a1518;
+    background: url('ELEMENTY/bg.jpg') center/cover no-repeat #7a1620;
     transform: scale(1.06);          /* overscan, by blur nie odsłaniał krawędzi */
     will-change: filter;
   }
@@ -630,7 +630,7 @@
 
 
   <!-- TŁO MUZYCZNE (startuje w momencie startu rozgrywki) -->
-  <audio id="bg-music" src="ELEMENTY/merry-loop.m4a" loop preload="auto" playsinline></audio>
+  <audio id="bg-music" src="ELEMENTY/track.mp4" loop preload="auto" playsinline></audio>
 
   <!-- iOS PERMISSION -->
   <div id="ios-perm" class="hidden">
@@ -925,7 +925,7 @@ const MUSIC_VOL_FULL = 0.4     // pełna głośność (ekran startowy + rozgrywk
 const MUSIC_VOL_DUCK = 0.25    // lekkie przyciszenie na czas odliczania 3-2-1
 bgMusic.volume = MUSIC_VOL_FULL
 // Wersja z alternatywnym podkładem (fortepian): adres /piano.html → inny plik muzyki.
-if (location.pathname.indexOf('piano') >= 0) bgMusic.src = 'ELEMENTY/piano-loop.m4a'
+if (location.pathname.indexOf('piano') >= 0) bgMusic.src = 'ELEMENTY/track.mp4'
 // Warianty z muzyką od ekranu startowego + duck w odliczaniu 3-2-1:
 //   /piano-intro.html = muzyka rusza przy pierwszym geście (np. PLAY)
 //   /piano-tap.html   = ekran „Tap to Start" → po dotknięciu muzyka gra już na ekranie startowym
@@ -1117,7 +1117,7 @@ function loadImages(cb) {
     basket.h = bw * (basketImg.naturalHeight / basketImg.naturalWidth)
     checkDone()
   }
-  basketImg.src = 'ELEMENTY/koszyk.png'
+  basketImg.src = 'ELEMENTY/basket.png'
 
   ITEM_DEFS.forEach(def => {
     const img = new Image()
@@ -1452,7 +1452,7 @@ function drawBasket() {
     const gap = 3
     const cols = 5
     const rowStep = 13                        // each higher row is raised this much
-    const fillLine = basket.y + basket.h * 0.46  // chocolates rest here; lower part hides in box
+    const fillLine = basket.y + basket.h * 0.40  // linia otwartego wierzchu nowego pudełka (misie siadają tutaj)
     ctx.save()
     ctx.beginPath()
     ctx.rect(basket.x + 6, 0, basket.w - 12, fillLine)  // top = 0 → no head clipping
