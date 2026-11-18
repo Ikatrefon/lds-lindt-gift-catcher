@@ -1365,12 +1365,13 @@ function spawnItem() {
 // prędkość spadania: mocno zróżnicowana (wolne/szybkie) + rampa trudności (ostra od 12 s)
 function pralineSpeed() {
   const el = GAME_TIME - timeLeft
-  const ramp = el < 12 ? el * 0.06 : 0.72 + (el - 12) * 0.24
-  // ~18% misiów spada BARDZO szybko (trudne do złapania) — żeby wysoki wynik nie był łatwy
-  if (Math.random() < 0.18) return 9 + Math.random() * 4.5 + ramp
+  // Rampa startuje wcześniej (10 s zamiast 12) i jest stroma: pod koniec gra ma dociskać.
+  const ramp = el < 10 ? el * 0.10 : 1.0 + (el - 10) * 0.34
+  // ~26% misiów spada BARDZO szybko (było 18%) — to one pilnują, by wysoki wynik nie był darmowy
+  if (Math.random() < 0.26) return 11 + Math.random() * 5 + ramp
   const r = Math.random()
-  const variety = r * r * 6.0        // mniej skrajnie wolnych na starcie (r² zamiast r³)
-  return 3.0 + variety + ramp        // baza 2.6→3.0: jeszcze szybsze opadanie
+  const variety = r * r * 7.0        // r² — mało skrajnie wolnych
+  return 4.2 + variety + ramp        // baza 3.0→4.2
 }
 
 function gameLoop(ts) {
