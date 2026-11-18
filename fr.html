@@ -58,6 +58,11 @@
     pointer-events: none;
   }
   #countdown.hidden { display: none; }
+  #countdown span.go {
+    font-size: 46px;                 /* fraza zamiast cyfry — przy 112px nie miesci sie na ekranie */
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
   #countdown span {
     font-family: 'Optima', 'Segoe UI', sans-serif;
     font-size: 112px;
@@ -1306,13 +1311,13 @@ function runCountdown(cb) {
   let n = 3
   function step() {
     if (n > 0) {
-      span.textContent = n
+      span.textContent = n; span.classList.remove('go')
       span.style.animation = 'none'; void span.offsetWidth; span.style.animation = 'cdPop 0.8s ease-out forwards'
       beep(420 + (3 - n) * 90, 0.12, 'sine', 0.13)
       n--
       setTimeout(step, 800)
     } else {
-      span.textContent = 'Go'
+      span.textContent = 'C’est parti\u00A0!'; span.classList.add('go')
       span.style.animation = 'none'; void span.offsetWidth; span.style.animation = 'cdPop 0.6s ease-out forwards'
       beep(880, 0.22, 'sine', 0.15)
       setTimeout(() => { el.classList.add('hidden'); cb() }, 560)
