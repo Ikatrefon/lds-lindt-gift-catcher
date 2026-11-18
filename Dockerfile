@@ -7,6 +7,7 @@ COPY . /usr/share/nginx/html
 RUN cp /usr/share/nginx/html/index.html /usr/share/nginx/html/nomusic.html \
  && cp /usr/share/nginx/html/index.html /usr/share/nginx/html/piano.html \
  && cp /usr/share/nginx/html/index.html /usr/share/nginx/html/piano-intro.html \
- && cp /usr/share/nginx/html/index.html /usr/share/nginx/html/piano-tap.html
+ && cp /usr/share/nginx/html/index.html /usr/share/nginx/html/piano-tap.html \
+ && cp /usr/share/nginx/html/fr.html /usr/share/nginx/html/fr-gift.html
 COPY default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
