@@ -390,12 +390,12 @@
     background: linear-gradient(135deg, rgba(200,150,30,0.15), rgba(200,150,30,0.05));
     border: 1px solid rgba(245,200,66,0.3);
     border-radius: 16px;
-    padding: 28px 28px 26px;          /* FR: gorny padding pod pudelko (bylo 40px pod wielki procent) */
-    margin: 14px 0 6px;
+    padding: 24px 28px 24px;          /* FR: gorny padding pod pudelko (bylo 40px pod wielki procent) */
+    margin: 4px 0 6px;                /* ramka wyzej — na S24 z paskiem adresu nie miescila sie cala */
   }
   /* FR: nagroda rzeczowa — pudelko zastepuje wielki procent. */
   #result-screen .gift-img {
-    width: 132px; display: block; margin: 0 auto 14px;
+    width: 88px; display: block; margin: 0 auto 12px;   /* 2/3 z 132px: obrazek jest wysoki (1:2,05) i zjadal 270px */
     filter: drop-shadow(0 10px 26px rgba(0,0,0,0.45));
   }
   #result-screen .discount-product {
@@ -406,6 +406,15 @@
   #result-screen .result-msg { color: #ffffff; font-size: 15px; line-height: 1.55; max-width: 280px; margin-top: 10px; }
   /* Ramka z procentem jest o ~210px nizsza od tej z pudelkiem — bez tego wisialaby tuz pod wynikiem. */
   #result-screen.pct .discount-box { margin-top: 130px; }
+  /* S24 i spolka: okno bywa ~660-700px zamiast 844. Scinamy gore, ramka zostaje czytelna. */
+  @media (max-height: 780px) {
+    #result-screen { padding-top: 14px; gap: 5px; }
+    #result-screen .logo { width: 104px; }
+    #result-screen h2 { font-size: 26px; }
+    #result-screen .gift-img { width: 76px; margin-bottom: 8px; }
+    #result-screen .discount-box { padding: 18px 24px 20px; margin-top: 2px; }
+    #result-screen.pct .discount-box { margin-top: 70px; }
+  }
   #result-screen .discount-pct {
     font-size: 56px;
     color: #ffffff;
