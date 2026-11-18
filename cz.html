@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="google" content="notranslate">
-<title>Hra TEDDY – Lindt</title>
+<title>Vánoční nadílka – Lindt</title>
 <style>
   @font-face {
     font-family: 'Optima';
@@ -549,6 +549,11 @@
     text-align: center;
   }
   #ios-perm.hidden { display: none; }
+  #ios-perm .perm-title {
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    color: #BB9750; font-size: 26px; line-height: 1.2;
+    text-shadow: 0 2px 10px rgba(245,200,66,0.35), 0 4px 9px rgba(0,0,0,0.5);
+  }
   #ios-perm p { color: #d4956a; font-size: 16px; line-height: 1.7; }
   #ios-perm .btn-perm {
     background: linear-gradient(90deg, #97702A 0%, #BB9750 50%, #97702A 100%);
@@ -676,27 +681,28 @@
   <!-- iOS PERMISSION -->
   <div id="ios-perm" class="hidden">
     <img src="ELEMENTY/Lindt_logo.png" style="width:80px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
-    <p>Nakloň telefon a hraj. Nejdřív povol přístup k pohybovým senzorům.</p>
-    <button class="btn-perm" onclick="requestIOSPermission()">Povolit</button>
+    <div class="perm-title">Jak hrát?</div>
+    <p>Pro ovládání košíku nakláněním telefonu povol přístup k pohybovým senzorům.</p>
+    <button class="btn-perm" onclick="requestIOSPermission()">POVOLIT POHYB</button>
     <div class="ctrl-divider"></div>
     <div class="ctrl-hint">
-      <div class="ctrl-hint-txt">Nakloň telefon<br><b>nebo posouvej prstem</b><br>a hýbej košíkem</div>
+      <div class="ctrl-hint-txt">Nakláněj telefon<br><b>nebo posouvej prstem</b><br>a ovládej košík.</div>
     </div>
   </div>
 
   <!-- TAP TO START (wariant /piano-tap.html) -->
   <div id="tap-gate" class="hidden">
     <img src="ELEMENTY/Lindt_logo.png" style="width:90px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
-    <div class="tg-title">Hra TEDDY</div>
-    <div class="tg-cta">Klepni a začni</div>
-    <div class="tg-hint">Zvuk zapnutý</div>
+    <div class="tg-title">Vánoční nadílka</div>
+    <div class="tg-cta">Klikni a začni</div>
+    <div class="tg-hint">Zapnout zvuk</div>
   </div>
 
   <!-- START SCREEN -->
   <div id="start-screen" class="screen">
     <img src="ELEMENTY/Lindt_logo.png" class="logo" alt="Lindt">
-    <h1>Hra TEDDY</h1>
-    <div class="subtitle">Hraj a vyhraj</div>
+    <h1>Vánoční nadílka</h1>
+    <div class="subtitle">Chytej a vyhraj</div>
 
     <div class="carousel" id="carousel">
       <div class="slot"><img src="ELEMENTY/teddy-1.png" alt=""></div>
@@ -707,11 +713,11 @@
       <div class="slot"><img src="ELEMENTY/teddy-3.png" alt=""></div>
     </div>
 
-    <button class="btn-play" onclick="onPlayPressed()">Začínám</button>
+    <button class="btn-play" onclick="onPlayPressed()">HRÁT A VYHRÁT</button>
 
     <div class="discount-hint">
-      Chytej TEDDY a vyhraj<br>
-      <strong style="color:#ffffff">dárek</strong> pro svůj další nákup.
+      Chytej čokoládové dobroty a získej<br>
+      <strong style="color:#ffffff">jednu ze sladkých odměn</strong>.
     </div>
   </div>
 
@@ -763,16 +769,16 @@
       <img src="ELEMENTY/gift-placeholder.png" class="gift-img" id="result-gift" alt="">
       <div class="discount-pct" id="result-pct">10%</div>
       <div class="discount-ship" id="result-ship">DOPRAVA<br>ZDARMA</div>
-      <div class="discount-label" id="result-label">Sleva na nákup</div>
+      <div class="discount-label" id="result-label">SLEVA NA NÁKUP</div>
       <div class="discount-product" id="result-product">Lindor Mini Dárkové Balení 75&nbsp;g</div>
       <div class="discount-cond" id="result-cond">k nákupu nad 990&nbsp;Kč</div>
       <div class="code-label" id="result-codelabel">Kód slevy</div>
       <div class="discount-code" id="result-code">LINDTCZ10</div>
-      <button class="btn-copy" id="btn-copy" onclick="onCopyBtn()">Kopírovat kód</button>
+      <button class="btn-copy" id="btn-copy" onclick="onCopyBtn()">KOPÍROVAT KÓD</button>
     </div>
     <div class="result-note" id="result-note"></div>
     <div class="result-msg" id="result-msg"></div>
-    <button class="btn-play-again" id="btn-again" onclick="onAgainBtn()">Hrát znovu</button>
+    <button class="btn-play-again" id="btn-again" onclick="onAgainBtn()">HRÁT ZNOVU</button>
   </div>
 
 </div>
@@ -1329,7 +1335,7 @@ function runCountdown(cb) {
       n--
       setTimeout(step, 800)
     } else {
-      span.textContent = 'Jedeme!'; span.classList.add('go')
+      span.textContent = 'START!'; span.classList.add('go')
       span.style.animation = 'none'; void span.offsetWidth; span.style.animation = 'cdPop 0.6s ease-out forwards'
       beep(880, 0.22, 'sine', 0.15)
       setTimeout(() => { el.classList.add('hidden'); cb() }, 560)
@@ -1601,7 +1607,7 @@ function showResult() {
   const box = document.getElementById('discount-box')
   const note = document.getElementById('result-note')
   const cb = document.getElementById('btn-copy')
-  if (cb) { clearCopyTimers(); cb.textContent = 'Kopírovat kód'; cb.classList.remove('copied', 'cta', 'shop'); cb.style.opacity = '1' }
+  if (cb) { clearCopyTimers(); cb.textContent = 'KOPÍROVAT KÓD'; cb.classList.remove('copied', 'cta', 'shop'); cb.style.opacity = '1' }
   document.getElementById('result-score-val').textContent = score
 
   const msg   = document.getElementById('result-msg')
@@ -1624,10 +1630,10 @@ function showResult() {
     rs.classList.add('try-again')
     again.style.display = ''
     if (zeroTries === 1) {
-      document.getElementById('result-title').textContent = 'Nevadí!'
+      document.getElementById('result-title').textContent = 'Zkus to znovu!'
       scoreRow.style.display = ''
       msg.textContent = 'TEDDY ti tentokrát utekli. Máš ještě jeden pokus!'
-      again.textContent = 'Zkusit znovu'
+      again.textContent = 'HRÁT ZNOVU'
     } else {
       document.getElementById('result-title').textContent = 'Tentokrát ne…'
       scoreRow.style.display = 'none'
@@ -1639,7 +1645,7 @@ function showResult() {
     scoreRow.style.display = ''
     msg.textContent = ''
     again.style.display = ''                 // CZ: powtorka ZOSTAJE takze przy nagrodzie
-    again.textContent = 'Hrát znovu'
+    again.textContent = 'HRÁT ZNOVU'
     note.style.display = ''
     box.style.display = ''
 
@@ -1649,7 +1655,8 @@ function showResult() {
     else if (rate > 0.50) poziom = 'pct'
     else                  poziom = 'ship'
 
-    const tytul = { gift: 'Výborně!', pct: 'Skvělá práce!', ship: 'Dobrý pokus!' }
+    // Klientka dala JEDEN tytul dla wszystkich nagrod, nie trzy osobne.
+    const tytul = { gift: 'Skvělá práce!', pct: 'Skvělá práce!', ship: 'Skvělá práce!' }
     document.getElementById('result-title').textContent = tytul[poziom]
 
     gift.style.display  = poziom === 'gift' ? '' : 'none'
@@ -1659,7 +1666,7 @@ function showResult() {
     ship.style.display  = poziom === 'ship' ? '' : 'none'
 
     label.textContent = poziom === 'gift' ? 'Dárek zdarma'
-                      : poziom === 'pct'  ? 'Sleva na nákup'
+                      : poziom === 'pct'  ? 'SLEVA NA NÁKUP'
                       : 'na tvůj nákup'
     // „Kód slevy" jest prawda TYLKO przy znizce; przy dostawie i prezencie to nie rabat.
     kodLbl.textContent = poziom === 'pct' ? 'Kód slevy' : 'Tvůj kód'
@@ -1692,7 +1699,7 @@ function copyCode() {
     if (!btn.classList.contains('cta')) return
     btn.style.opacity = '0'
     copyTimers.push(setTimeout(() => {
-      btn.classList.add('shop'); btn.textContent = 'Nakoupit'; btn.style.opacity = '1'
+      btn.classList.add('shop'); btn.textContent = 'NAKOUPIT'; btn.style.opacity = '1'
     }, 320))
   }
   const toUseCode = () => {
