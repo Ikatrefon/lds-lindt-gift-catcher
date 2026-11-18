@@ -673,7 +673,7 @@
   <div id="tap-gate" class="hidden">
     <img src="ELEMENTY/Lindt_logo.png" style="width:90px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
     <div class="tg-title">Le Jeu TEDDY</div>
-    <div class="tg-cta">Cliquez pour démarrer</div>
+    <div class="tg-cta">Appuyez pour démarrer</div>
     <div class="tg-hint">Son activé</div>
   </div>
 
@@ -1604,9 +1604,9 @@ function showResult() {
     rs.classList.add('try-again')
     again.style.display = ''
     if (zeroTries === 1) {
-      document.getElementById('result-title').textContent = 'Dommage !'
+      document.getElementById('result-title').textContent = 'Ce n’est pas grave !'
       scoreRow.style.display = ''
-      msg.textContent = "Vous n'avez attrapé aucun TEDDY. Il vous reste une chance."
+      msg.textContent = 'Les TEDDY vous ont échappé cette fois. Il vous reste une chance\u00A0!'
       again.textContent = 'Un dernier essai'
     } else {
       document.getElementById('result-title').textContent = 'Pas cette fois…'
