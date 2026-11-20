@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<html lang="hu" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="google" content="notranslate">
+<title>Kapd el az ajándékot – Lindt</title>
+<style>
+  @font-face {
+    font-family: 'Optima';
+    src: url('ELEMENTY/optima-regular.woff2') format('woff2');
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'Optima';
+    src: url('ELEMENTY/optima-bold.woff2') format('woff2');
+    font-weight: 700; font-style: normal; font-display: swap;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    background: #1a0a00;
+    width: 100vw;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+  }
+
+  #game-container {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    max-width: 480px;
+    overflow: hidden;
+    background: #1a0a00;
+  }
+  /* osobna warstwa tła gry — można ją blurować bez ruszania reszty */
+  #game-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: url('ELEMENTY/bg.jpg') center/cover no-repeat #7a1620;
+    transform: scale(1.06);          /* overscan, by blur nie odsłaniał krawędzi */
+    will-change: filter;
+  }
+  /* odliczanie 3-2-1 */
+  #countdown {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  #countdown.hidden { display: none; }
+  #countdown span.go {
+    font-size: 46px;                 /* fraza zamiast cyfry — przy 112px nie miesci sie na ekranie */
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  #countdown span {
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    font-size: 112px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 4px 26px rgba(0,0,0,0.55), 0 0 44px rgba(245,200,66,0.6);
+  }
+  @keyframes cdPop {
+    0%   { transform: scale(2.3); opacity: 0; }
+    35%  { opacity: 1; }
+    100% { transform: scale(1);   opacity: 0.95; }
+  }
+
+  /* pauza przy obrocie telefonu do poziomu */
+  #landscape-pause {
+    position: absolute; inset: 0; z-index: 60;
+    background: rgba(10,3,0,0.96);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 22px; padding: 32px; text-align: center;
+  }
+  #landscape-pause.hidden { display: none; }
+  #landscape-pause .lp-rotate { width: 78px; height: 78px; animation: lpRot 2.2s ease-in-out infinite; transform-origin: center; }
+  @keyframes lpRot { 0%, 45% { transform: rotate(-90deg); } 70%, 100% { transform: rotate(0deg); } }
+  #landscape-pause .lp-title {
+    font-family: 'Optima','Segoe UI',sans-serif; color: #fff;
+    font-size: 48px; letter-spacing: 0.2em; font-weight: 700;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  }
+  #landscape-pause .lp-text {
+    font-family: 'Optima','Segoe UI',sans-serif; color: #e9cfa0;
+    font-size: 17.6px; line-height: 1.45; max-width: 320px; letter-spacing: 0.02em;
+  }
+  #landscape-pause .lp-text b { color: #ffffff; }
+
+  /* ekran „Tap to Start" (wariant /piano-tap.html) — pierwszy gest odblokowuje dźwięk */
+  #tap-gate {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    background: rgba(10,3,0,0.92);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #tap-gate.hidden { display: none; }
+  #tap-gate .tg-title {
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    color: #ffffff;
+    font-size: 32px;
+    letter-spacing: 0.04em;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  }
+  #tap-gate .tg-cta {
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #BB9750;
+    font-size: 18.4px;
+    animation: tgPulse 1.4s ease-in-out infinite;
+  }
+  #tap-gate .tg-hint { color: #d4956a; font-size: 13.6px; letter-spacing: 0.05em; }
+  /* instrukcja sterowania (ekran „Enable Tilt Control") — BEZ ramki */
+  .ctrl-divider { width: 72%; max-width: 280px; height: 1px; background: rgba(187,151,80,0.45); margin: 6px 0 2px; }
+  .ctrl-hint { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 320px; }
+  .ctrl-hint-txt {
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    color: #e9cfa0; font-size: 16.32px; line-height: 1.45; letter-spacing: 0.02em;
+  }
+  .ctrl-hint-txt b { color: #ffffff; }
+  @keyframes tgPulse {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.06); }
+  }
+
+  /* ──────────── CHRISTMAS DECOR ──────────── */
+  .garland {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+
+  .sparkle {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+    animation: twinkle 2s ease-in-out infinite;
+  }
+  .sparkle::before {
+    content: '✦';
+    color: #BB9750;
+    font-size: 10px;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* ── ANIMATED SNOW ── */
+  .snow {
+    position: absolute;
+    top: -6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.85);
+    pointer-events: none;
+    z-index: 2;
+    animation: snowfall linear infinite;
+  }
+  @keyframes snowfall {
+    0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.8; }
+    100% { transform: translateY(105dvh) translateX(18px) rotate(360deg); opacity: 0.1; }
+  }
+
+  /* ── TWINKLING STARS ── */
+  .star {
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+    border-radius: 50%;
+    animation: starGlow ease-in-out infinite;
+  }
+  @keyframes starGlow {
+    0%, 100% { opacity: 0.08; transform: scale(0.6); box-shadow: none; }
+    50%       { opacity: 1;    transform: scale(1.8); box-shadow: 0 0 5px 2px rgba(245,200,66,0.6); }
+  }
+
+  /* ── SANTA SLEIGH ── */
+  #santa {
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    width: 340px;
+    height: 106px;
+    top: 8%;
+    transform: translateX(115vw);
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+  }
+  /* galopujące renifery: sprite-sheet 14 klatek (340px każda), cyklowane steps() */
+  #santa-sprite {
+    width: 340px;
+    height: 106px;
+    background: url('ELEMENTY/santa-gallop.png') 0 0 no-repeat;
+    animation: gallop 0.7s steps(14) infinite;
+  }
+  @keyframes gallop {
+    from { background-position-x: 0; }
+    to   { background-position-x: -4760px; }
+  }
+
+  /* ── FIREWORKS CANVAS ── */
+  #fw-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+  @keyframes santaFly {
+    from { transform: translateX(115vw); opacity: 1; }
+    to   { transform: translateX(-115vw); opacity: 1; }
+  }
+
+  /* ──────────── SCREENS ──────────── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: opacity 0.4s ease;
+  }
+  .screen.hidden { opacity: 0; pointer-events: none; }
+
+  /* ── START SCREEN ── */
+  #start-screen {
+    background: url('ELEMENTY/bg-red-A2-calm.jpg') center/cover no-repeat;
+    gap: 0;
+  }
+
+  #start-screen .logo {
+    width: 150px;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 2px 8px rgba(245,200,66,0.4));
+  }
+
+  #start-screen h1 {
+    font-size: 41.6px;
+    color: #BB9750;
+    letter-spacing: 0.04em;
+    text-shadow: 0 2px 12px rgba(245,200,66,0.5);
+    line-height: 1.1;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  #start-screen .subtitle {
+    color: #ffffff;
+    font-size: 14.4px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  /* karuzela pralinek 3D — krok z pauzą */
+  .carousel {
+    position: relative;
+    width: 280px;
+    height: 175px;
+    margin-bottom: 18px;
+  }
+  /* .slot = pozycja w karuzeli (krok z transition); img = ciągły flow */
+  .carousel .slot {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.8s cubic-bezier(.4,0,.2,1), filter 0.8s ease, opacity 0.8s ease;
+    will-change: transform, filter, opacity;
+  }
+  .carousel .slot img {
+    display: block;
+    width: 52px;
+    height: auto;
+    object-fit: contain;
+    transform-origin: center center;
+    -webkit-box-reflect: below 1px linear-gradient(to bottom, transparent 45%, rgba(255,255,255,0.28));
+    animation: praflow 3.6s ease-in-out infinite;
+  }
+  @keyframes praflow {
+    0%, 100% { transform: translateY(2px) rotate(-5deg); }
+    50%      { transform: translateY(-4px) rotate(5deg); }
+  }
+
+  .btn-play {
+    background: linear-gradient(90deg, #97702A 0%, #BB9750 50%, #97702A 100%);
+    color: #1a0600;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 48px;
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(245,200,66,0.4), 0 2px 4px rgba(0,0,0,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .btn-play:active { transform: scale(0.96); box-shadow: 0 2px 10px rgba(245,200,66,0.3); }
+
+  .discount-hint {
+    color: #ffffff;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* ── HUD ── */
+  #hud {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    height: 92px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: #000;
+    border-top: 2px solid rgba(245,200,66,0.55);
+  }
+  #hud .hud-main { display: flex; gap: 22px; align-items: flex-start; }
+  #hud .hud-score { color: #BB9750; font-size: 38.4px; line-height: 1; }
+  #hud .hud-score .lbl { font-size: 9.92px; display: block; color: #a07840; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
+  #hud .hud-time { color: #BB9750; font-size: 38.4px; line-height: 1; }
+  #hud .hud-time .lbl { font-size: 9.92px; display: block; color: #a07840; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
+  #hud .hud-time .unit { font-size: 16px; color: #BB9750; margin-left: 4px; letter-spacing: 0.04em; }
+  #hud .hud-time.low #time-val, #hud .hud-time.low .unit { color: #e74c3c; }
+  #hud .hud-lives { display: flex; gap: 5px; align-items: center; flex-direction: column; }
+  #hud .hud-lives .lbl { font-size: 9.92px; color: #a07840; letter-spacing: 0.1em; text-transform: uppercase; }
+  #hud .hud-lives .hearts-row { display: flex; gap: 4px; align-items: flex-end; }
+  #hud .hud-lives .life { height: 27px; width: auto; transition: opacity 0.2s, transform 0.2s; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); }
+  #hud .hud-lives .life.lost { opacity: 0.18; transform: scale(0.8); }
+
+  /* ── GAME CANVAS ── */
+  #game-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+  }
+
+  /* ── RESULT SCREEN ── */
+  #result-screen {
+    background: url('ELEMENTY/bg-red-A2-calm.jpg') center/cover no-repeat;
+    justify-content: flex-start;      /* treść od góry (logo/Well done/score wyżej) */
+    gap: 8px;
+    padding: 26px 24px 24px;
+    text-align: center;
+  }
+  #result-screen .logo {
+    width: 132px;
+    margin-bottom: 2px;
+    filter: drop-shadow(0 2px 8px rgba(245,200,66,0.4));
+  }
+  #result-screen h2 {
+    font-size: 30.4px;
+    color: #BB9750;
+    text-shadow: 0 2px 10px rgba(245,200,66,0.4);
+    line-height: 1.2;
+  }
+  #result-screen .result-score {
+    color: #ffffff;
+    font-size: 16px;
+    letter-spacing: 0.06em;
+  }
+  #result-screen .result-score strong { color: #ffffff; font-size: 22.4px; }
+  #result-screen .discount-box {
+    background: linear-gradient(135deg, rgba(200,150,30,0.15), rgba(200,150,30,0.05));
+    border: 1px solid rgba(245,200,66,0.3);
+    border-radius: 16px;
+    padding: 24px 28px 24px;          /* FR: gorny padding pod pudelko (bylo 40px pod wielki procent) */
+    margin: 4px 0 6px;                /* ramka wyzej — na S24 z paskiem adresu nie miescila sie cala */
+  }
+  /* FR: nagroda rzeczowa — pudelko zastepuje wielki procent. */
+  #result-screen .gift-img {
+    width: 152px; display: block; margin: 0 auto 12px;   /* CZ: zastepcze pudelko jest niskie (1:1,07), wiec moze byc wieksze */   /* 2/3 z 132px: obrazek jest wysoki (1:2,05) i zjadal 270px */
+    filter: drop-shadow(0 10px 26px rgba(0,0,0,0.45));
+  }
+  #result-screen .discount-ship {
+    font-size: 30px; color: #ffffff; line-height: 1.15;
+    text-shadow: 0 4px 20px rgba(245,200,66,0.6);
+  }
+  #result-screen .code-label {
+    color: #ffffff; opacity: 0.8; font-size: 12px; letter-spacing: 0.1em;
+    text-transform: uppercase; margin-top: 16px;
+  }
+  #result-screen .discount-product {
+    color: #ffffff; font-size: 17.5px; line-height: 1.25; margin-top: 6px;
+    /* Jedna linia dopoki nazwa sie miesci; dluzsza ZAWIJA sie zamiast wylewac poza ramke.
+       Zastepcza nazwa PL zajmuje 278px przy ~280px wnetrza — dwa piksele zapasu, wiec
+       prawdziwa nazwa od klientki niemal na pewno by nie weszla. */
+    text-wrap: balance;
+  }
+  #result-screen .discount-cond { color: #ffffff; opacity: 0.85; font-size: 13px; line-height: 1.4; margin-top: 4px; }
+  #result-screen .result-msg { color: #ffffff; font-size: 15px; line-height: 1.55; max-width: 280px; margin-top: 10px; }
+  /* Ramka z procentem jest o ~210px nizsza od tej z pudelkiem — bez tego wisialaby tuz pod wynikiem. */
+  #result-screen.pct .discount-box { margin-top: 120px; }   /* doprava i 10% — ramka niska, dosuwamy do srodka */
+  #result-screen.gift .discount-box { margin-top: 40px; }   /* pudelko jest wysokie, wystarczy drobne obnizenie */
+  /* S24 i spolka: okno bywa ~660-700px zamiast 844. Scinamy gore, ramka zostaje czytelna. */
+  @media (max-height: 780px) {
+    #result-screen { padding-top: 14px; gap: 5px; }
+    #result-screen .logo { width: 104px; }
+    #result-screen h2 { font-size: 26px; }
+    #result-screen .gift-img { width: 124px; margin-bottom: 8px; }
+    #result-screen .discount-box { padding: 18px 24px 20px; margin-top: 2px; }
+    #result-screen.pct .discount-box { margin-top: 64px; }
+    #result-screen.gift .discount-box { margin-top: 14px; }
+  }
+  #result-screen .discount-pct {
+    font-size: 56px;
+    color: #ffffff;
+    line-height: 1;
+    text-shadow: 0 4px 20px rgba(245,200,66,0.6);
+  }
+  #result-screen .discount-label {
+    color: #ffffff;
+    font-size: 13.6px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  #result-screen .discount-code {
+    margin-top: 6px;
+    background: rgba(245,200,66,0.1);
+    border: 1px dashed rgba(245,200,66,0.5);
+    border-radius: 8px;
+    padding: 10px 20px;
+    color: #ffffff;
+    font-size: 19.2px;
+    letter-spacing: 0.15em;
+  }
+  #result-screen .btn-copy {
+    margin-top: 10px;
+    background: rgba(245,200,66,0.18);
+    color: #ffffff;
+    border: 1px solid rgba(245,200,66,0.55);
+    border-radius: 50px;
+    padding: 7px 22px;
+    font-family: inherit;
+    font-size: 11.52px;
+    font-weight: bold;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.25s ease, transform 0.1s, opacity 0.32s ease;
+  }
+  #result-screen .btn-copy:active { transform: scale(0.95); }
+  #result-screen .btn-copy.copied { background: #BB9750; color: #1a0600; border-color: #BB9750; }
+  /* po skopiowaniu: "USE YOUR CODE" = biały napis, NIE button */
+  #result-screen .btn-copy.cta {
+    margin-top: 16px;
+    background: none;
+    border: none;
+    box-shadow: none;
+    color: #ffffff;
+    font-size: 15px;
+    letter-spacing: 0.16em;
+    cursor: default;
+  }
+  /* po 2 s: "SHOP NOW" = złoty button (klikalny) */
+  #result-screen .btn-copy.shop {
+    background: linear-gradient(90deg, #97702A 0%, #BB9750 50%, #97702A 100%);
+    color: #1a0600;
+    padding: 13px 42px;
+    box-shadow: 0 4px 20px rgba(245,200,66,0.4), 0 2px 4px rgba(0,0,0,0.4);
+    cursor: pointer;
+  }
+  #result-screen .result-note {
+    color: #ffffff;
+    font-size: 11.52px;
+    letter-spacing: 0.06em;
+    line-height: 1.6;
+    max-width: 300px;
+    margin-top: 4px;
+  }
+  .btn-play-again {
+    background: linear-gradient(90deg, #97702A 0%, #BB9750 50%, #97702A 100%);
+    color: #1a0600;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 48px;
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(245,200,66,0.3);
+    text-transform: uppercase;
+    transition: transform 0.15s;
+    margin-top: auto;                 /* na dół ekranu (treść od góry) */
+    margin-bottom: 34px;              /* trochę wyżej od dolnej krawędzi */
+  }
+  .btn-play-again:active { transform: scale(0.96); }
+  /* ekran TRY AGAIN: tytuł + wynik wyśrodkowane w pionie (Play Again wraca do grupy) */
+  #result-screen.try-again { justify-content: center; }
+  #result-screen.try-again .btn-play-again { margin-top: 28px; }
+
+  /* ── CATCH FLASH ── */
+  .catch-flash {
+    position: absolute;
+    z-index: 30;
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    font-size: 24px;
+    color: #BB9750;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    pointer-events: none;
+    animation: floatUp 0.9s ease-out forwards;
+  }
+  @keyframes floatUp {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
+  }
+
+  /* ── IOS PERMISSION OVERLAY ── */
+  #ios-perm {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,3,0,0.95);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 32px 28px;
+    text-align: center;
+  }
+  #ios-perm.hidden { display: none; }
+  #ios-perm .perm-title {
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    color: #BB9750; font-size: 26px; line-height: 1.2;
+    text-shadow: 0 2px 10px rgba(245,200,66,0.35), 0 4px 9px rgba(0,0,0,0.5);
+  }
+  #ios-perm p { color: #d4956a; font-size: 16px; line-height: 1.7; }
+  #ios-perm .btn-perm {
+    background: linear-gradient(90deg, #97702A 0%, #BB9750 50%, #97702A 100%);
+    color: #1a0600;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 40px;
+    font-family: 'Optima', 'Segoe UI', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div id="game-container">
+
+  <!-- warstwa tła gry (osobno, by móc blurować tylko tło) -->
+  <div id="game-bg"></div>
+
+  <!-- ── ANIMATED SNOW (generowany w JS — gęsty) ── -->
+
+  <!-- ── TWINKLING STARS ── -->
+  <div class="star" style="width:3px;height:3px;background:#f5c842;top:9%;left:14%;animation-duration:2.3s;animation-delay:0s"></div>
+  <div class="star" style="width:4px;height:4px;background:#f5c842;top:6%;left:38%;animation-duration:3.1s;animation-delay:0.8s"></div>
+  <div class="star" style="width:3px;height:3px;background:#fff;top:11%;right:16%;animation-duration:2.8s;animation-delay:1.4s"></div>
+  <div class="star" style="width:4px;height:4px;background:#f5c842;top:18%;left:6%;animation-duration:3.5s;animation-delay:0.3s"></div>
+  <div class="star" style="width:2px;height:2px;background:#fff;top:22%;right:8%;animation-duration:2.1s;animation-delay:1.9s"></div>
+  <div class="star" style="width:3px;height:3px;background:#f5c842;top:28%;left:24%;animation-duration:4s;animation-delay:0.6s"></div>
+  <div class="star" style="width:4px;height:4px;background:#fff;top:15%;left:55%;animation-duration:2.6s;animation-delay:2.2s"></div>
+  <div class="star" style="width:3px;height:3px;background:#f5c842;top:33%;right:20%;animation-duration:3.3s;animation-delay:1.1s"></div>
+  <div class="star" style="width:2px;height:2px;background:#fff;top:42%;left:10%;animation-duration:2.9s;animation-delay:0.5s"></div>
+  <div class="star" style="width:3px;height:3px;background:#f5c842;top:48%;right:12%;animation-duration:3.7s;animation-delay:1.7s"></div>
+  <div class="star" style="width:4px;height:4px;background:#f5c842;top:7%;right:42%;animation-duration:2.4s;animation-delay:2.8s"></div>
+  <div class="star" style="width:2px;height:2px;background:#fff;top:25%;left:70%;animation-duration:3.9s;animation-delay:0.9s"></div>
+
+  <!-- ── MIKOŁAJ NA SANIACH ── -->
+  <div id="santa"><div id="santa-sprite"></div></div>
+
+  <!-- ── FIREWORKS CANVAS ── -->
+  <canvas id="fw-canvas"></canvas>
+
+  <!-- Trees and sparkles replaced by background.png bitmap -->
+  <!-- <svg class="tree-left" viewBox="0 0 160 520" width="150" height="480">
+    <!-- star -->
+    <polygon points="80,4 86,22 105,22 90,33 96,51 80,40 64,51 70,33 55,22 74,22" fill="#f5c842"/>
+    <!-- layer 1 -->
+    <polygon points="80,18 44,105 116,105" fill="#1f6b1f"/>
+    <polygon points="80,18 56,62 104,62" fill="#2a8a2a"/>
+    <!-- layer 2 -->
+    <polygon points="80,68 24,178 136,178" fill="#1a5c1a"/>
+    <polygon points="80,68 40,120 120,120" fill="#268026"/>
+    <!-- layer 3 -->
+    <polygon points="80,130 4,256 156,256" fill="#1f6b1f"/>
+    <polygon points="80,130 32,190 128,190" fill="#2a8a2a"/>
+    <!-- layer 4 -->
+    <polygon points="80,195 -16,340 176,340" fill="#1a5c1a"/>
+    <polygon points="80,195 20,265 140,265" fill="#268026"/>
+    <!-- trunk -->
+    <rect x="62" y="336" width="36" height="70" rx="4" fill="#6b3a10"/>
+    <rect x="68" y="336" width="10" height="70" fill="#8b5020" opacity="0.4"/>
+    <!-- ornaments layer 1 -->
+    <circle cx="68" cy="88" r="6" fill="#c0392b"/><circle cx="68" cy="88" r="3" fill="#e74c3c" opacity="0.7"/>
+    <circle cx="96" cy="82" r="5" fill="#f5c842"/>
+    <!-- ornaments layer 2 -->
+    <circle cx="48" cy="158" r="7" fill="#3d7abd"/><circle cx="48" cy="158" r="3" fill="#5d9add" opacity="0.7"/>
+    <circle cx="112" cy="162" r="6" fill="#c0392b"/>
+    <circle cx="80" cy="148" r="5" fill="#f5c842"/>
+    <!-- ornaments layer 3 -->
+    <circle cx="32" cy="230" r="7" fill="#f5c842"/>
+    <circle cx="128" cy="225" r="7" fill="#c0392b"/><circle cx="128" cy="225" r="3" fill="#e74c3c" opacity="0.7"/>
+    <circle cx="80" cy="220" r="6" fill="#3d7abd"/>
+    <!-- ornaments layer 4 -->
+    <circle cx="18" cy="308" r="7" fill="#c0392b"/>
+    <circle cx="142" cy="315" r="8" fill="#f5c842"/>
+    <circle cx="80" cy="300" r="7" fill="#c0392b"/>
+    <circle cx="50" cy="320" r="5" fill="#3d7abd"/>
+    <circle cx="112" cy="310" r="5" fill="#f5c842"/>
+    <!-- snow tips -->
+    <ellipse cx="80" cy="18" rx="6" ry="3" fill="white" opacity="0.6"/>
+    <ellipse cx="44" cy="105" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+    <ellipse cx="116" cy="105" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+    <ellipse cx="24" cy="178" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+    <ellipse cx="136" cy="178" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+    <ellipse cx="4" cy="256" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+    <ellipse cx="156" cy="256" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+  </svg>
+  <!-- <svg class="tree-right" viewBox="0 0 160 520" width="150" height="480">
+    <polygon points="80,4 86,22 105,22 90,33 96,51 80,40 64,51 70,33 55,22 74,22" fill="#f5c842"/>
+    <polygon points="80,18 44,105 116,105" fill="#1f6b1f"/>
+    <polygon points="80,18 56,62 104,62" fill="#2a8a2a"/>
+    <polygon points="80,68 24,178 136,178" fill="#1a5c1a"/>
+    <polygon points="80,68 40,120 120,120" fill="#268026"/>
+    <polygon points="80,130 4,256 156,256" fill="#1f6b1f"/>
+    <polygon points="80,130 32,190 128,190" fill="#2a8a2a"/>
+    <polygon points="80,195 -16,340 176,340" fill="#1a5c1a"/>
+    <polygon points="80,195 20,265 140,265" fill="#268026"/>
+    <rect x="62" y="336" width="36" height="70" rx="4" fill="#6b3a10"/>
+    <rect x="68" y="336" width="10" height="70" fill="#8b5020" opacity="0.4"/>
+    <circle cx="68" cy="88" r="6" fill="#3d7abd"/><circle cx="68" cy="88" r="3" fill="#5d9add" opacity="0.7"/>
+    <circle cx="96" cy="82" r="5" fill="#c0392b"/>
+    <circle cx="48" cy="158" r="7" fill="#f5c842"/>
+    <circle cx="112" cy="162" r="6" fill="#3d7abd"/>
+    <circle cx="80" cy="148" r="5" fill="#c0392b"/>
+    <circle cx="32" cy="230" r="7" fill="#c0392b"/>
+    <circle cx="128" cy="225" r="7" fill="#f5c842"/>
+    <circle cx="80" cy="220" r="6" fill="#c0392b"/>
+    <circle cx="18" cy="308" r="7" fill="#f5c842"/>
+    <circle cx="142" cy="315" r="8" fill="#3d7abd"/>
+    <circle cx="80" cy="300" r="7" fill="#f5c842"/>
+    <circle cx="50" cy="320" r="5" fill="#c0392b"/>
+    <circle cx="112" cy="310" r="5" fill="#3d7abd"/>
+    <ellipse cx="80" cy="18" rx="6" ry="3" fill="white" opacity="0.6"/>
+    <ellipse cx="44" cy="105" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+    <ellipse cx="116" cy="105" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+    <ellipse cx="24" cy="178" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+    <ellipse cx="136" cy="178" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+    <ellipse cx="4" cy="256" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+    <ellipse cx="156" cy="256" rx="5" ry="2.5" fill="white" opacity="0.4"/>
+  </svg> -->
+
+
+  <!-- TŁO MUZYCZNE (startuje w momencie startu rozgrywki) -->
+  <audio id="bg-music" src="ELEMENTY/track.mp4" loop preload="auto" playsinline></audio>
+
+  <!-- iOS PERMISSION -->
+  <div id="ios-perm" class="hidden">
+    <img src="ELEMENTY/Lindt_logo.png" style="width:80px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
+    <div class="perm-title">Hogyan játssz?</div>
+    <p>A kosár telefonod döntésével történő irányításához engedélyezd a mozgásérzékelők használatát.</p>
+    <button class="btn-perm" onclick="requestIOSPermission()">MOZGÁS ENGEDÉLYEZÉSE</button>
+    <div class="ctrl-divider"></div>
+    <div class="ctrl-hint">
+      <div class="ctrl-hint-txt">Döntsd meg a telefonod,<br><b>vagy húzd az ujjad</b><br>a kosár irányításához.</div>
+    </div>
+  </div>
+
+  <!-- TAP TO START (wariant /piano-tap.html) -->
+  <div id="tap-gate" class="hidden">
+    <img src="ELEMENTY/Lindt_logo.png" style="width:90px;filter:drop-shadow(0 2px 8px rgba(245,200,66,0.4))">
+    <div class="tg-title">Kapd el az ajándékot</div>
+    <div class="tg-cta">Koppints a kezdéshez</div>
+    <div class="tg-hint">Hang bekapcsolása</div>
+  </div>
+
+  <!-- START SCREEN -->
+  <div id="start-screen" class="screen">
+    <img src="ELEMENTY/Lindt_logo.png" class="logo" alt="Lindt">
+    <h1>Kapd el az ajándékot</h1>
+    <div class="subtitle">Kapd el és nyerj</div>
+
+    <div class="carousel" id="carousel">
+      <div class="slot"><img src="ELEMENTY/teddy-1.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/teddy-2.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/teddy-3.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/teddy-1.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/teddy-2.png" alt=""></div>
+      <div class="slot"><img src="ELEMENTY/teddy-3.png" alt=""></div>
+    </div>
+
+    <button class="btn-play" onclick="onPlayPressed()">JÁTSSZ ÉS NYERJ</button>
+
+    <div class="discount-hint">
+      Kapd el a csokoládés finomságokat, és nyerd meg<br>
+      <strong style="color:#ffffff">az édes nyeremények egyikét</strong>.
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud" style="display:none">
+    <div class="hud-main">
+      <div class="hud-score">
+        <span class="lbl">Pontszám</span>
+        <span id="score-val">0</span>
+      </div>
+      <div class="hud-time" id="time-display">
+        <span class="lbl">Idő</span>
+        <span id="time-val">20</span><span class="unit">mp</span>
+      </div>
+    </div>
+    <div class="hud-lives" id="lives-display">
+      <span class="lbl">Életek</span>
+      <div class="hearts-row">
+        <img class="life" id="h1" src="ELEMENTY/teddy-life.png" alt="">
+        <img class="life" id="h2" src="ELEMENTY/teddy-life.png" alt="">
+        <img class="life" id="h3" src="ELEMENTY/teddy-life.png" alt="">
+      </div>
+    </div>
+  </div>
+  <!-- GAME CANVAS -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- odliczanie 3-2-1 przed startem -->
+  <div id="countdown" class="hidden"><span></span></div>
+
+  <!-- pauza przy obrocie do poziomu -->
+  <div id="landscape-pause" class="hidden">
+    <svg class="lp-rotate" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <rect x="23" y="7" width="18" height="34" rx="3.5" stroke="#f5c842" stroke-width="2.5"/>
+      <line x1="29" y1="11" x2="35" y2="11" stroke="#f5c842" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M12 52 a20 20 0 0 1 40 0" stroke="#BB9750" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M52 52 l-5 -2 M52 52 l2 -5" stroke="#BB9750" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="lp-title">Szünet</div>
+    <div class="lp-text">Fordítsd a telefont <b>álló helyzetbe</b> a folytatáshoz</div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="result-screen" class="screen hidden">
+    <img src="ELEMENTY/Lindt_logo.png" class="logo" alt="Lindt">
+    <h2 id="result-title">Szép munka!</h2>
+    <div class="result-score">Pontszámod: <strong id="result-score-val">0</strong></div>
+    <div class="discount-box" id="discount-box">
+      <img src="ELEMENTY/gift-placeholder.png" class="gift-img" id="result-gift" alt="">
+      <div class="discount-pct" id="result-pct">10%</div>
+      <div class="discount-ship" id="result-ship">INGYENES<br>SZÁLLÍTÁS</div>
+      <div class="discount-label" id="result-label">KEDVEZMÉNY A VÁSÁRLÁSBÓL</div>
+      <div class="discount-product" id="result-product">Lindor Mini Ajándékcsomag 75&nbsp;g</div>
+      <div class="discount-cond" id="result-cond">19&nbsp;900&nbsp;Ft feletti vásárlás esetén</div>
+      <div class="code-label" id="result-codelabel">Kedvezménykód</div>
+      <div class="discount-code" id="result-code">LINDTHU10</div>
+      <button class="btn-copy" id="btn-copy" onclick="onCopyBtn()">KÓD MÁSOLÁSA</button>
+    </div>
+    <div class="result-note" id="result-note"></div>
+    <div class="result-msg" id="result-msg"></div>
+    <button class="btn-play-again" id="btn-again" onclick="onAgainBtn()">JÁTSSZ ÚJRA</button>
+  </div>
+
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+// AUDIO ENGINE
+// ──────────────────────────────────────────────
+let audioCtx = null
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+  return audioCtx
+}
+
+function beep(freq, dur, type = 'sine', vol = 0.18) {
+  try {
+    const ctx = getAudioCtx()
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    o.connect(g); g.connect(ctx.destination)
+    o.type = type
+    o.frequency.value = freq
+    g.gain.setValueAtTime(vol, ctx.currentTime)
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur)
+    o.start(); o.stop(ctx.currentTime + dur)
+  } catch(e) {}
+}
+
+// ── Bus muzyczny: musicGain → lowpass → (dry + pogłos) → wyjście ──
+// Pogłos + lowpass + addytywne sinusy = cieplej, „mniej 8-bit".
+let musicGain = null
+function makeImpulse(ctx, seconds, decay) {
+  const rate = ctx.sampleRate, len = Math.floor(rate * seconds)
+  const buf = ctx.createBuffer(2, len, rate)
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c)
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay)
+  }
+  return buf
+}
+function getMusicGain() {
+  const ctx = getAudioCtx()
+  if (!musicGain) {
+    musicGain = ctx.createGain(); musicGain.gain.value = 0.42        // ciszej
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 6500; lp.Q.value = 0.2
+    musicGain.connect(lp)
+    const dry = ctx.createGain(); dry.gain.value = 0.9; lp.connect(dry); dry.connect(ctx.destination)
+    const conv = ctx.createConvolver(); conv.buffer = makeImpulse(ctx, 1.8, 2.6)   // miękki pogłos = przestrzeń, mniej sucho
+    const wet = ctx.createGain(); wet.gain.value = 0.22
+    lp.connect(conv); conv.connect(wet); wet.connect(ctx.destination)
+  }
+  return musicGain
+}
+
+// ── Sleigh bells: filtrowany szum + miękkie sinusowe partiale (bez square = mniej 8-bit) ──
+let _noiseBuf = null
+function noiseBuffer(ctx) {
+  if (_noiseBuf) return _noiseBuf
+  const len = Math.floor(ctx.sampleRate * 0.25)
+  const b = ctx.createBuffer(1, len, ctx.sampleRate)
+  const d = b.getChannelData(0)
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1
+  _noiseBuf = b; return b
+}
+function sleighBell(accent) {
+  try {
+    const ctx = getAudioCtx(), now = ctx.currentTime, out = getMusicGain()
+    const src = ctx.createBufferSource(); src.buffer = noiseBuffer(ctx)
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = accent ? 5000 : 4000; bp.Q.value = 0.9
+    const g = ctx.createGain()
+    const v = accent ? 0.06 : 0.032, decay = accent ? 0.16 : 0.10
+    g.gain.setValueAtTime(0.0001, now)
+    g.gain.linearRampToValueAtTime(v, now + 0.004)
+    g.gain.exponentialRampToValueAtTime(0.001, now + decay)
+    src.connect(bp); bp.connect(g); g.connect(out)
+    src.start(now); src.stop(now + 0.25)
+    ;[3300, 4900, 6500].forEach((f, i) => {       // miękki, dzwoneczkowy połysk (sinus)
+      const o = ctx.createOscillator(), og = ctx.createGain()
+      o.type = 'sine'; o.frequency.value = f * (0.99 + Math.random() * 0.02)
+      og.gain.setValueAtTime((accent ? 0.009 : 0.005) / (i + 1), now)
+      og.gain.exponentialRampToValueAtTime(0.0006, now + decay * 0.9)
+      o.connect(og); og.connect(out); o.start(now); o.stop(now + decay)
+    })
+  } catch(e) {}
+}
+
+// ── Ciepły bas (bujanie pod melodią) ──
+function bassNote(freq, durMs) {
+  if (freq <= 0) return
+  try {
+    const ctx = getAudioCtx(), now = ctx.currentTime, out = getMusicGain()
+    const dur = durMs / 1000 * 0.95
+    const o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain()
+    o.type = 'triangle'; o.frequency.value = freq
+    o2.type = 'sine'; o2.frequency.value = freq
+    g.gain.setValueAtTime(0.0001, now)
+    g.gain.linearRampToValueAtTime(0.11, now + 0.03)
+    g.gain.exponentialRampToValueAtTime(0.001, now + dur)
+    o.connect(g); o2.connect(g); g.connect(out)
+    o.start(now); o.stop(now + dur); o2.start(now); o2.stop(now + dur)
+  } catch(e) {}
+}
+
+// Melodia: addytywne sinusy (celesta/pozytywka) — ciepło, miękki atak, bez square/triangle ostrości
+function playMelodyNote(freq, durMs) {
+  if (freq <= 0) return   // pauza
+  try {
+    const actx = getAudioCtx()
+    const now = actx.currentTime
+    const out = getMusicGain()
+    const dur = durMs / 1000 * 0.92
+
+    // partiale (harmoniczne): podstawa + oktawa + kwinta+oktawa + lekka 4-ta harmoniczna
+    const parts = [[1, 0.13, 1.0], [2, 0.055, 0.7], [3, 0.022, 0.5], [4, 0.010, 0.4]]
+    parts.forEach(([mul, amp, decFrac]) => {
+      const o = actx.createOscillator(), g = actx.createGain()
+      o.type = 'sine'; o.frequency.value = freq * mul
+      o.connect(g); g.connect(out)
+      g.gain.setValueAtTime(0.0001, now)
+      g.gain.linearRampToValueAtTime(amp, now + 0.012)            // miękki atak
+      g.gain.exponentialRampToValueAtTime(0.0008, now + dur * decFrac)
+      o.start(now); o.stop(now + dur * decFrac + 0.05)
+    })
+
+    // sub-oktawa — ciepło/pełnia
+    const sub = actx.createOscillator(), subG = actx.createGain()
+    sub.type = 'sine'; sub.frequency.value = freq / 2
+    sub.connect(subG); subG.connect(out)
+    subG.gain.setValueAtTime(0.035, now)
+    subG.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.55)
+    sub.start(now); sub.stop(now + dur * 0.6)
+  } catch(e) {}
+}
+
+function playCatch() {
+  beep(880, 0.06, 'sine', 0.16)
+  setTimeout(() => beep(1047, 0.08, 'sine', 0.12), 55)
+  setTimeout(() => beep(1319, 0.1, 'sine', 0.09), 110)
+}
+
+function playMiss() {
+  beep(294, 0.12, 'sawtooth', 0.10)
+  setTimeout(() => beep(220, 0.2, 'sawtooth', 0.08), 100)
+}
+
+function playGameOver() {
+  beep(392, 0.15, 'sawtooth', 0.16)
+  setTimeout(() => beep(330, 0.18, 'sawtooth', 0.14), 180)
+  setTimeout(() => beep(247, 0.45, 'sawtooth', 0.12), 380)
+}
+
+// ── Jingle Bells (parafraza, C-dur, skoczne ~185 BPM) — [freq,ms], freq=0 = pauza ──
+// C4=262 D4=294 E4=330 F4=349 G4=392 A4=440 B4=494 C5=523
+const CAROL = [
+  // Jingle bells, jingle bells,
+  [330,320],[330,320],[330,620],
+  [330,320],[330,320],[330,620],
+  // jingle all the way
+  [330,320],[392,320],[262,480],[294,160],[330,760],
+  // Oh what fun it is to ride
+  [349,320],[349,320],[349,320],[349,160],[349,160],
+  [349,320],[330,320],[330,320],[330,160],[330,160],
+  // in a one horse open sleigh
+  [330,320],[294,320],[294,320],[330,320],
+  [294,620],[392,620],
+  [0,260],
+  // Jingle bells, jingle bells, (powtórka)
+  [330,320],[330,320],[330,620],
+  [330,320],[330,320],[330,620],
+  // jingle all the way
+  [330,320],[392,320],[262,480],[294,160],[330,760],
+  // Oh what fun it is to ride
+  [349,320],[349,320],[349,320],[349,160],[349,160],
+  [349,320],[330,320],[330,320],[330,160],[330,160],
+  // one horse open sleigh — zakończenie G G F D C
+  [392,320],[392,320],[349,320],[294,320],[262,900],
+  [0,360],
+]
+
+let musicInterval = null
+let sleighInterval = null
+let melodyIdx = 0
+
+function playMusicNote() {
+  const [freq, dur] = CAROL[melodyIdx % CAROL.length]
+  playMelodyNote(freq, dur)
+  if (dur >= 280) bassNote(freq / 2, Math.min(dur, 520))   // bas na nutach strukturalnych = świąteczne bujanie
+  melodyIdx++
+}
+
+// ── Tło muzyczne = plik MP3 (startuje dokładnie w momencie startu rozgrywki) ──
+const bgMusic = document.getElementById('bg-music')
+const MUSIC_VOL_FULL = 0.4     // pełna głośność (ekran startowy + rozgrywka)
+const MUSIC_VOL_DUCK = 0.25    // lekkie przyciszenie na czas odliczania 3-2-1
+bgMusic.volume = MUSIC_VOL_FULL
+// Wersja z alternatywnym podkładem (fortepian): adres /piano.html → inny plik muzyki.
+if (location.pathname.indexOf('piano') >= 0) bgMusic.src = 'ELEMENTY/track.mp4'
+// Warianty z muzyką od ekranu startowego + duck w odliczaniu 3-2-1:
+//   /piano-intro.html = muzyka rusza przy pierwszym geście (np. PLAY)
+//   /piano-tap.html   = ekran „Tap to Start" → po dotknięciu muzyka gra już na ekranie startowym
+const TAP_GATE = true   // FR: ekran „Cliquez pour démarrer" + muzyka od ekranu startowego (wariant piano-tap na stałe)
+
+// ── WARIANT NAGRÓD ──────────────────────────────────────────────
+// fr.html      → progi: GIFT / 10% / 15%
+// fr-gift.html → sama nagroda rzeczowa, bez progów (Dockerfile robi `cp fr.html fr-gift.html`)
+const TIERS = location.pathname.indexOf('gift') < 0
+
+const LIEN_BOUTIQUE = 'https://www.lindt.hu/valasztek/unnepek/karacsony'   // sciezka z nagroda (link potwierdzony przez klientke)
+const LIEN_OFFRES   = 'https://www.lindt.hu/valasztek/unnepek/karacsony'   // drugie zero: lindt.hu NIE MA ogolnej strony promocji
+                                                                           // (/akciok, /ajanlatok, /promociok = 404), wiec tymczasowo sklep swiateczny
+
+// Jedna szansa po zerze liczona W RAMACH SESJI. Przeładowanie strony ją zeruje —
+// blokada na stałe wymagałaby zapisu w przeglądarce, co odcięłoby telefon od gry na zawsze.
+let zeroTries = 0
+const MUSIC_EARLY = TAP_GATE || location.pathname.indexOf('piano-intro') >= 0
+// Wersja BEZ muzyki: adres /nomusic.html (albo ?music=off). Efekty dźwiękowe grają zawsze.
+const MUSIC_ON = !(location.search.indexOf('music=off') >= 0 || location.pathname.indexOf('nomusic') >= 0)
+
+// Płynna zmiana głośności tła (duck / powrót)
+let _volFade = null
+function fadeVolume(target, ms) {
+  if (_volFade) { clearInterval(_volFade); _volFade = null }
+  const start = bgMusic.volume, t0 = performance.now()
+  if (ms <= 0) { bgMusic.volume = target; return }
+  _volFade = setInterval(() => {
+    const k = Math.min(1, (performance.now() - t0) / ms)
+    bgMusic.volume = Math.max(0, Math.min(1, start + (target - start) * k))
+    if (k >= 1) { clearInterval(_volFade); _volFade = null }
+  }, 30)
+}
+
+function ensureMusicPlaying() {
+  if (!MUSIC_ON) return
+  if (bgMusic.paused) { try { const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {} }
+}
+
+// Wariant intro: wystartuj muzykę przy PIERWSZYM geście na stronie (mobile wymaga gestu)
+let _musicKicked = false
+function kickMusicEarly() {
+  if (!MUSIC_EARLY || !MUSIC_ON || _musicKicked) return
+  _musicKicked = true
+  bgMusic.volume = MUSIC_VOL_FULL
+  // play() NAJPIERW (wewnątrz gestu); currentTime ustawiamy best-effort PO — na świeżym
+  // elemencie i tak jest 0, a ustawianie go przed załadowaniem mediów rzuca wyjątek i blokowałoby play().
+  try { const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {}
+  try { bgMusic.currentTime = 0 } catch(e) {}
+}
+// iOS Safari odblokowuje audio tylko na zdarzeniach KOŃCA gestu (touchend/click), NIE na touchstart.
+// Wariant z ekranem „Tap to Start" obsługuje to w setupTapGate — tu tylko wariant bez bramki.
+if (MUSIC_EARLY && !TAP_GATE) {
+  ['touchend', 'click', 'pointerup'].forEach(ev =>
+    window.addEventListener(ev, kickMusicEarly, { once: true }))
+}
+
+// Odblokowanie audio na mobile: krótkie wyciszone play→pause WEWNĄTRZ gestu (Play)
+function unlockBgMusic() {
+  if (!MUSIC_ON) return
+  try {
+    bgMusic.muted = true
+    const p = bgMusic.play()
+    if (p && p.then) p.then(() => { bgMusic.pause(); bgMusic.currentTime = 0; bgMusic.muted = false }).catch(() => { bgMusic.muted = false })
+    else { bgMusic.pause(); bgMusic.currentTime = 0; bgMusic.muted = false }
+  } catch(e) {}
+}
+
+function startMusic() {
+  if (!MUSIC_ON) return
+  if (MUSIC_EARLY) {
+    // muzyka już gra od ekranu startowego — nie restartuj, tylko przywróć pełną głośność po odliczaniu
+    ensureMusicPlaying()
+    fadeVolume(MUSIC_VOL_FULL, 500)
+    return
+  }
+  try { bgMusic.currentTime = 0; bgMusic.volume = MUSIC_VOL_FULL; const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {}
+}
+
+function stopMusic() {
+  try { bgMusic.pause() } catch(e) {}
+}
+
+// ──────────────────────────────────────────────
+// GAME STATE
+// ──────────────────────────────────────────────
+const canvas = document.getElementById('game-canvas')
+const ctx = canvas.getContext('2d')
+const container = document.getElementById('game-container')
+const gameBg = document.getElementById('game-bg')
+
+// ── PRÓBA: blur tła w trakcie gry (false = wersja pierwotna, ostre tło) ──
+const BG_BLUR_TRIAL = true
+const BG_BLUR_MAX = 5            // maksymalny blur tła [px]
+let playMs = 0                   // czas rozgrywki (ms) — do krzywej blura
+let outroParticles = []          // wybuchy pralinek na końcu
+
+// ── padający śnieg (generowany) — w grze + na ekranie startowym i końcowym ──
+function genSnow(target, n, z){
+  for (let i = 0; i < n; i++){
+    const f = document.createElement('div')
+    f.className = 'snow'
+    const s = 2 + Math.random() * 4
+    f.style.width = s + 'px'; f.style.height = s + 'px'
+    f.style.left = (Math.random() * 100) + '%'
+    f.style.animationDuration = (5 + Math.random() * 7) + 's'
+    f.style.animationDelay = (-Math.random() * 8) + 's'
+    if (z != null) f.style.zIndex = z
+    target.insertBefore(f, target.firstChild)
+  }
+}
+genSnow(container, 90)                                              // pole gry (z-index 2)
+genSnow(document.getElementById('start-screen'), 55, -1)           // za treścią ekranu startowego
+genSnow(document.getElementById('result-screen'), 55, -1)          // za treścią ekranu końcowego
+
+// ── karuzela pralinek na ekranie startowym (obrót skokowy z pauzą) ──
+;(function carousel(){
+  const car = document.getElementById('carousel')
+  if (!car) return
+  const slots = [...car.querySelectorAll('.slot')]
+  const N = slots.length
+  const Rx = 80, TWO = Math.PI * 2
+  // desync flow każdej pralinki
+  slots.forEach(s => { const im = s.querySelector('img'); im.style.animationDelay = (-Math.random() * 3.6).toFixed(2) + 's' })
+  let base = 0
+  function layout(){
+    slots.forEach((s, i) => {
+      const th = base + i * (TWO / N)
+      const d = Math.cos(th)                       // 1 = front (środek, najbliżej), -1 = tył
+      const t = (d + 1) / 2                         // 0..1
+      const xr = Rx * (1.12 - 0.12 * t)            // tylne nieco DALEJ od środka
+      const x = Math.sin(th) * xr
+      const y = -(1 - t) * 5                        // tylne odrobinę wyżej
+      const scale = 0.3 + t * 0.92                 // tył ~0.3 (mniejsze) .. front ~1.22
+      const blur = Math.pow(1 - t, 1.25) * 8.5     // front 0 .. tył ~8.5px
+      s.style.transform = `translate(-50%,-50%) translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(${scale.toFixed(3)})`
+      s.style.filter = `blur(${blur.toFixed(2)}px) drop-shadow(0 5px 7px rgba(0,0,0,0.45))`
+      s.style.opacity = (0.3 + t * 0.7).toFixed(2)
+      s.style.zIndex = Math.round(t * 1000)
+    })
+  }
+  layout()
+  setInterval(() => { base += TWO / N; layout() }, 2600)   // wolniej: skok co 2.6s; przejście 0.8s, potem pauza
+})()
+
+// spadające obiekty = misie Lindt (3 warianty, równe punkty/waga)
+const ITEM_DEFS = [
+  { src: 'ELEMENTY/teddy-1.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/teddy-2.png', pts: 5, w: 1 },
+  { src: 'ELEMENTY/teddy-3.png', pts: 5, w: 1 },
+]
+
+const images = {}
+let imagesLoaded = 0
+const totalImages = ITEM_DEFS.length + 1
+
+let basketImg = null
+
+// ── Sanie Lindt: przelot przez ekran gry na starcie rundy + ślad świątecznych iskier ──
+const sleighImg = new Image()
+sleighImg.src = 'ELEMENTY/sleigh.png'
+let sleighFly = null              // {x,y,w,h,vx} gdy sanie przelatują
+let sleighSparkles = []
+class Sparkle {
+  constructor(x, y) {
+    this.x = x + (Math.random() - 0.5) * 20
+    this.y = y + (Math.random() - 0.5) * 34
+    this.vx = 0.3 + Math.random() * 0.7        // dryf do tyłu (sanie lecą w lewo)
+    this.vy = (Math.random() - 0.5) * 0.7
+    this.alpha = 1
+    this.size = 1.4 + Math.random() * 2.6
+    this.decay = 0.012 + Math.random() * 0.022
+    this.color = Math.random() < 0.5 ? '#f5c842' : '#ffffff'
+    this.rot = Math.random() * Math.PI
+  }
+  update() { this.x += this.vx; this.y += this.vy; this.vy += 0.012; this.alpha -= this.decay }
+  get dead() { return this.alpha <= 0 }
+  draw(c) {
+    c.save(); c.globalAlpha = Math.max(0, this.alpha); c.fillStyle = this.color
+    c.translate(this.x, this.y); c.rotate(this.rot)
+    const s = this.size
+    c.beginPath()
+    c.moveTo(0, -s*2); c.lineTo(s*0.45, -s*0.45); c.lineTo(s*2, 0); c.lineTo(s*0.45, s*0.45)
+    c.lineTo(0, s*2); c.lineTo(-s*0.45, s*0.45); c.lineTo(-s*2, 0); c.lineTo(-s*0.45, -s*0.45)
+    c.closePath(); c.fill(); c.restore()
+  }
+}
+function startSleighFlyby() {
+  const h = Math.min(canvas.height * 0.17, 150)
+  const ratio = (sleighImg.naturalWidth && sleighImg.naturalHeight) ? sleighImg.naturalWidth / sleighImg.naturalHeight : 0.9
+  const w = h * ratio
+  sleighFly = { x: canvas.width + 20, y: canvas.height * 0.10, w, h, vx: -(canvas.width + w + 60) / 210 }  // prawo→lewo, ~3,5 s
+  sleighSparkles = []
+}
+
+function loadImages(cb) {
+  basketImg = new Image()
+  basketImg.onload = () => {
+    // basket: fix width, derive height from natural ratio; ~1/3 larger than original
+    const bw = Math.min(canvas.width * 0.34, 147)
+    basket.w = bw
+    basket.h = bw * (basketImg.naturalHeight / basketImg.naturalWidth)
+    resize()   // przelicz pozycję koszyka z realną wysokością (inaczej zostaje luka do HUD)
+    checkDone()
+  }
+  basketImg.src = 'ELEMENTY/basket.png'
+
+  ITEM_DEFS.forEach(def => {
+    const img = new Image()
+    img.onload = () => {
+      def.naturalW = img.naturalWidth
+      def.naturalH = img.naturalHeight
+      checkDone()
+    }
+    img.src = def.src
+    images[def.src] = img
+  })
+
+  function checkDone() {
+    imagesLoaded++
+    if (imagesLoaded >= totalImages) cb()
+  }
+}
+
+// weighted random pick
+function pickItemDef() {
+  const totalW = ITEM_DEFS.reduce((s, d) => s + d.w, 0)
+  let r = Math.random() * totalW
+  for (const d of ITEM_DEFS) { r -= d.w; if (r <= 0) return d }
+  return ITEM_DEFS[0]
+}
+
+const GAME_TIME = 20   // czas rozgrywki w sekundach
+const HUD_H = 92       // wysokość czarnego paska HUD na dole (px)
+// BLIK rysowany w kodzie (osobna warstwa na canvasie) — w pełni przesuwalny:
+let BLIK_FRAC = 0.84          // pozycja środka blika jako ułamek wysokości ekranu (PRZESUWALNE góra/dół)
+const BLIK_WHALF = 0.48       // pół-szerokość smugi (ułamek szerokości)
+const BLIK_HHALF = 0.024      // pół-wysokość smugi (ułamek wysokości)
+function blikY() { return BLIK_FRAC * canvas.height }
+function drawBlik() {
+  // glow przypięty do DOLNEJ krawędzi koszyka — porusza się razem z nim (poziomo i pionowo)
+  const cx = basket.x + basket.w / 2
+  const y = basket.y + basket.h - 2
+  const hw = basket.w * 0.70, hh = Math.max(8, basket.h * 0.34)
+  ctx.save()
+  ctx.translate(cx, y); ctx.scale(hw, hh)
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1)
+  g.addColorStop(0,    'rgba(255,250,235,0.70)')
+  g.addColorStop(0.45, 'rgba(255,240,210,0.24)')
+  g.addColorStop(1,    'rgba(255,255,255,0)')
+  ctx.fillStyle = g
+  ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill()
+  ctx.restore()
+}
+let score = 0
+let lives = 3
+let caughtCount = 0      // złapane misie (licznik do nagrody = % złapanych)
+let missedCount = 0      // pominięte misie
+let timeLeft = GAME_TIME
+let gameRunning = false
+let paused = false              // pauza przy obrocie do poziomu
+let musicWasPlaying = false
+let resumeTimer = null
+let items = []
+let basket = { x: 0, y: 0, w: 147, h: 80 }
+let basketContents = []
+const MAX_BASKET_ITEMS = 9
+let tiltX = 0
+let rawTiltX = 0
+let touchX = null
+let lastTime = null
+let timerInterval = null
+let spawnTimer = 0
+let spawnInterval = 950    // bazowy odstęp spawnu — krótszy = więcej spadających produktów
+
+function resize() {
+  canvas.width = container.offsetWidth
+  canvas.height = container.offsetHeight
+  // koszyk nisko — tuż nad paskiem HUD (glow przypięty do jego dolnej krawędzi, patrz drawBlik)
+  basket.y = canvas.height - HUD_H - basket.h - 4
+  basket.x = Math.min(Math.max(basket.x, 0), canvas.width - basket.w)
+}
+
+// ── Szünet: pauza przy obrocie telefonu do poziomu ──
+function isLandscape() {
+  if (window.matchMedia) return window.matchMedia('(orientation: landscape)').matches
+  return window.innerWidth > window.innerHeight
+}
+function pauseGame() {
+  if (!gameRunning || paused) return
+  paused = true
+  musicWasPlaying = !bgMusic.paused
+  if (musicWasPlaying) { try { bgMusic.pause() } catch(e) {} }
+  document.getElementById('landscape-pause').classList.remove('hidden')
+}
+function resumeGame() {
+  if (!paused) return
+  paused = false
+  lastTime = performance.now()
+  document.getElementById('landscape-pause').classList.add('hidden')
+  if (musicWasPlaying && MUSIC_ON) { try { const p = bgMusic.play(); if (p && p.catch) p.catch(() => {}) } catch(e) {} }
+}
+function handleOrientation() {
+  if (isLandscape()) {
+    if (resumeTimer) { clearTimeout(resumeTimer); resumeTimer = null }
+    if (gameRunning && !paused) pauseGame()
+  } else if (paused) {
+    if (resumeTimer) clearTimeout(resumeTimer)
+    resumeTimer = setTimeout(() => {                 // 1 s opóźnienia po powrocie do pionu
+      resumeTimer = null
+      if (!isLandscape()) resumeGame()
+    }, 1000)
+  }
+}
+
+function startGame() {
+  score = 0; lives = 3; timeLeft = GAME_TIME
+  caughtCount = 0; missedCount = 0
+  items = []; basketContents = []; outroParticles = []
+  sleighFly = null; sleighSparkles = []
+  tiltX = 0; rawTiltX = 0; touchX = null
+  spawnTimer = 0; spawnInterval = 850; playMs = 0
+  basket.x = (canvas.width - basket.w) / 2
+
+  updateHUD()
+  document.getElementById('time-val').textContent = timeLeft
+  document.getElementById('time-display').classList.remove('low')
+  document.getElementById('hud').style.display = 'flex'
+  document.getElementById('game-canvas').style.display = 'block'
+  document.getElementById('start-screen').classList.add('hidden')
+  document.getElementById('result-screen').classList.add('hidden')
+  if (BG_BLUR_TRIAL) gameBg.style.filter = 'blur(0px)'   // start: ostro
+
+  requestWakeLock()
+  drawStaticFrame()            // pokaż tacę/blik podczas odliczania
+  runCountdown(beginPlay)
+}
+
+function drawStaticFrame() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  drawBlik()
+  drawBasket()
+}
+
+function runCountdown(cb) {
+  const el = document.getElementById('countdown')
+  const span = el.querySelector('span')
+  el.classList.remove('hidden')
+  // wariant intro: muzyka gra od startu — lekko przyciszona na czas odliczania
+  if (MUSIC_EARLY && MUSIC_ON) { ensureMusicPlaying(); fadeVolume(MUSIC_VOL_DUCK, 350) }
+  let n = 3
+  function step() {
+    if (n > 0) {
+      span.textContent = n; span.classList.remove('go')
+      span.style.animation = 'none'; void span.offsetWidth; span.style.animation = 'cdPop 0.8s ease-out forwards'
+      beep(420 + (3 - n) * 90, 0.12, 'sine', 0.13)
+      n--
+      setTimeout(step, 800)
+    } else {
+      span.textContent = 'RAJT!'; span.classList.add('go')
+      span.style.animation = 'none'; void span.offsetWidth; span.style.animation = 'cdPop 0.6s ease-out forwards'
+      beep(880, 0.22, 'sine', 0.15)
+      setTimeout(() => { el.classList.add('hidden'); cb() }, 560)
+    }
+  }
+  step()
+}
+
+function beginPlay() {
+  gameRunning = true
+  lastTime = performance.now()
+  startSleighFlyby()          // sanie przelatują przez ekran na starcie rundy
+  startMusic()
+  timerInterval = setInterval(() => {
+    if (paused) return          // obrót do poziomu → czas stoi
+    timeLeft--
+    document.getElementById('time-val').textContent = Math.max(0, timeLeft)
+    if (timeLeft <= 5) document.getElementById('time-display').classList.add('low')
+    if (timeLeft <= 0) endGame()
+  }, 1000)
+  requestAnimationFrame(gameLoop)
+}
+
+function updateHUD() {
+  document.getElementById('score-val').textContent = score
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById('h' + i).classList.toggle('lost', i > lives)
+  }
+}
+
+function spawnItem() {
+  const def = pickItemDef()
+  // misie: szersze/niższe niż pralinki — większa szerokość, wysokość z proporcji obrazu
+  const targetW = 60
+  const ratio = (def.naturalH && def.naturalW) ? def.naturalH / def.naturalW : 1
+  const w = targetW
+  const h = targetW * ratio
+  items.push({
+    def,
+    img: images[def.src],
+    x: Math.random() * (canvas.width - w),
+    y: -h,
+    w, h,
+    t: 0,
+    swayPh: Math.random() * Math.PI * 2,        // faza kołysania
+    swayFr: 0.0035 + Math.random() * 0.003,     // częstotliwość kołysania (na ms)
+    vy: pralineSpeed(),
+  })
+}
+// prędkość spadania: mocno zróżnicowana (wolne/szybkie) + rampa trudności (ostra od 12 s)
+function pralineSpeed() {
+  const el = GAME_TIME - timeLeft
+  // Rampa startuje wcześniej (10 s zamiast 12) i jest stroma: pod koniec gra ma dociskać.
+  const ramp = el < 10 ? el * 0.10 : 1.0 + (el - 10) * 0.34
+  // ~26% misiów spada BARDZO szybko (było 18%) — to one pilnują, by wysoki wynik nie był darmowy
+  if (Math.random() < 0.26) return 11 + Math.random() * 5 + ramp
+  const r = Math.random()
+  const variety = r * r * 7.0        // r² — mało skrajnie wolnych
+  return 4.2 + variety + ramp        // baza 3.0→4.2
+}
+
+function gameLoop(ts) {
+  if (!gameRunning) return
+  if (paused) { lastTime = ts; requestAnimationFrame(gameLoop); return }   // zamrożona scena podczas pauzy
+  const dt = Math.min(ts - lastTime, 50)
+  lastTime = ts
+  playMs += dt
+
+  // PRÓBA: blur tła — ostro na starcie, narasta do max i zostaje (bez powrotu do ostrości)
+  if (BG_BLUR_TRIAL) {
+    const bl = BG_BLUR_MAX * Math.min(1, (playMs / 1000) / 12)
+    gameBg.style.filter = `blur(${bl.toFixed(2)}px)`
+  }
+
+  // Basket movement — lerp tiltX for smooth tilt response
+  tiltX += (rawTiltX - tiltX) * 0.09
+  const speed = canvas.width * 0.005
+  if (touchX !== null) {
+    const target = touchX - basket.w / 2
+    basket.x += (target - basket.x) * 0.10
+  } else {
+    basket.x += tiltX * speed * (dt / 16)
+  }
+  basket.x = Math.max(0, Math.min(canvas.width - basket.w, basket.x))
+
+  // Spawn
+  spawnTimer += dt
+  if (spawnTimer >= spawnInterval) {
+    spawnTimer = 0
+    const el = GAME_TIME - timeLeft
+    // gęstość: spokojnie na start, od 12 s bardzo gęsto
+    spawnInterval = Math.max(180, el < 12 ? 850 - el * 40 : 500 - (el - 12) * 55)
+    spawnItem()
+  }
+
+  // Update items
+  const toRemove = []
+  for (let i = items.length - 1; i >= 0; i--) {
+    const item = items[i]
+    item.y += item.vy * (dt / 16)
+    item.t += dt
+
+    // Collision with basket
+    if (
+      item.y + item.h > basket.y &&
+      item.y < basket.y + basket.h &&
+      item.x + item.w * 0.6 > basket.x &&
+      item.x + item.w * 0.4 < basket.x + basket.w
+    ) {
+      score += item.def.pts
+      caughtCount++
+      updateHUD()
+      playCatch()
+      showCatchLabel('+' + item.def.pts, item.x + item.w / 2, basket.y - 10)
+      basketContents.push({ img: item.img, aspect: item.h / item.w })
+      if (basketContents.length > MAX_BASKET_ITEMS) basketContents.shift()
+      toRemove.push(i)
+      continue
+    }
+
+    // Pominięte — przeleciało poniżej koszyka (nad paskiem HUD)
+    if (item.y > basket.y + basket.h + 20) {
+      lives--
+      missedCount++
+      updateHUD()
+      playMiss()
+      toRemove.push(i)
+      if (lives <= 0) { endGame(); return }
+    }
+  }
+  toRemove.forEach(i => items.splice(i, 1))
+
+  // Sanie — przelot + emisja iskier za saniami
+  if (sleighFly) {
+    sleighFly.x += sleighFly.vx * (dt / 16)
+    for (let k = 0; k < 2; k++) sleighSparkles.push(new Sparkle(sleighFly.x + sleighFly.w * 0.82, sleighFly.y + sleighFly.h * 0.55))
+    if (sleighFly.x < -sleighFly.w - 20) sleighFly = null
+  }
+  sleighSparkles = sleighSparkles.filter(p => { p.update(); return !p.dead })
+
+  // Draw
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  drawBlik()
+  drawItems()
+  drawBasket()
+  // sanie ponad sceną (krótki świąteczny akcent na starcie) — bez lustra (logo Lindt czytelne)
+  sleighSparkles.forEach(p => p.draw(ctx))
+  if (sleighFly && sleighImg.complete) ctx.drawImage(sleighImg, sleighFly.x, sleighFly.y, sleighFly.w, sleighFly.h)
+
+  requestAnimationFrame(gameLoop)
+}
+
+function drawItems() {
+  items.forEach(item => {
+    const a = Math.sin(item.t * item.swayFr + item.swayPh) * 0.22   // ±~13° kołysanie jak od powietrza
+    ctx.save()
+    ctx.translate(item.x + item.w / 2, item.y + item.h / 2)
+    ctx.rotate(a)
+    ctx.drawImage(item.img, -item.w / 2, -item.h / 2, item.w, item.h)
+    ctx.restore()
+  })
+}
+
+function drawBasket() {
+  // Draw basket first
+  if (basketImg && basketImg.complete) {
+    ctx.drawImage(basketImg, basket.x, basket.y, basket.w, basket.h)
+  } else {
+    ctx.fillStyle = '#8b4513'
+    ctx.beginPath()
+    ctx.ellipse(basket.x + basket.w/2, basket.y + basket.h/2, basket.w/2, basket.h/2, 0, 0, Math.PI*2)
+    ctx.fill()
+  }
+
+  // Złapane misie: DÓŁ misiów przycięty dokładnie 27 px od górnej krawędzi koszyka
+  // (wszystko poniżej basket.y+27 ukryte → dolna część chowa się za ścianką = wrażenie, że są w środku).
+  if (basketContents.length > 0) {
+    const iw = 23
+    const gap = 2
+    const cols = 5
+    const rowStep = 6
+    const CLIP_FROM_TOP = 27                      // px od górnej krawędzi koszyka
+    const LIFT = 19                               // przesunięcie złapanych misiów w górę (55 w górę − 36 w dół)
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(basket.x + 4, basket.y - LIFT, basket.w - 8, CLIP_FROM_TOP)   // okno clipu przesunięte w górę o LIFT
+    ctx.clip()
+    basketContents.forEach((bi, idx) => {
+      const col = idx % cols
+      const row = Math.floor(idx / cols)
+      const rowStart = row * cols
+      const rowCount = Math.min(cols, basketContents.length - rowStart)
+      const rowW = rowCount * (iw + gap) - gap
+      const ih = iw * bi.aspect
+      const ix = basket.x + (basket.w - rowW) / 2 + col * (iw + gap)
+      const iy = basket.y - LIFT - row * rowStep  // misie wyżej o LIFT; dół przycięty na linii okna
+      ctx.globalAlpha = 0.98
+      ctx.drawImage(bi.img, ix, iy, iw, ih)
+    })
+    ctx.restore()
+    ctx.globalAlpha = 1
+  }
+}
+
+function showCatchLabel(text, x, y) {
+  const el = document.createElement('div')
+  el.className = 'catch-flash'
+  el.textContent = text
+  el.style.left = x + 'px'
+  el.style.top = y + 'px'
+  el.style.position = 'absolute'
+  el.style.zIndex = '30'
+  container.appendChild(el)
+  el.addEventListener('animationend', () => el.remove())
+}
+
+function endGame() {
+  gameRunning = false
+  stopMusic()                 // zatrzymaj tło muzyczne na koniec rundy
+  clearInterval(timerInterval)
+  playGameOver()
+  releaseWakeLock()
+  // HUD ZOSTAJE widoczny przez outro (żeby dolny pasek nie znikał) — chowamy go dopiero w showResult
+  // blur tła zostaje (nie wracamy do ostrości); zresetuje go dopiero nowa gra
+  runOutro()
+}
+
+// kolorowy wybuch w punkcie (reużywa cząstek fajerwerków)
+function burstAt(x, y) {
+  const color = FW_COLORS[(Math.random() * FW_COLORS.length) | 0]
+  const n = 22 + (Math.random() * 10 | 0)
+  for (let i = 0; i < n; i++) outroParticles.push(new FWParticle(x, y, color))
+  beep(560 + Math.random() * 420, 0.07, 'triangle', 0.06)
+}
+
+// na koniec: pralinki które nie spadły znikają po kolei wybuchając
+function runOutro() {
+  if (items.length === 0) { setTimeout(showResult, 450); return }
+  let idx = 0, last = performance.now(), lastPop = 0
+  function loop(ts) {
+    const dt = Math.min(ts - last, 50); last = ts
+    if (idx < items.length && ts - lastPop >= 480) {   // co 480 ms kolejna (wolno)
+      lastPop = ts
+      const it = items[idx]; idx++
+      burstAt(it.x + it.w / 2, it.y + it.h / 2)
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    drawBlik()
+    for (let i = idx; i < items.length; i++) {          // jeszcze niewybuchnięte
+      const item = items[i]
+      const a = Math.sin(item.t * item.swayFr + item.swayPh) * 0.22
+      ctx.save(); ctx.translate(item.x + item.w / 2, item.y + item.h / 2); ctx.rotate(a)
+      ctx.drawImage(item.img, -item.w / 2, -item.h / 2, item.w, item.h); ctx.restore()
+    }
+    drawBasket()
+    outroParticles = outroParticles.filter(p => { p.update(); p.draw(ctx); return !p.dead })
+    ctx.globalAlpha = 1
+    if (idx < items.length || outroParticles.length) requestAnimationFrame(loop)
+    else { items = []; setTimeout(showResult, 350) }
+  }
+  requestAnimationFrame(loop)
+}
+
+function showResult() {
+  // Nagroda = % złapanych ze wszystkich spadłych misiów (złapane + pominięte).
+  const resolved = caughtCount + missedCount
+  const rate = resolved > 0 ? caughtCount / resolved : 0
+  const rs = document.getElementById('result-screen')
+  const box = document.getElementById('discount-box')
+  const note = document.getElementById('result-note')
+  const cb = document.getElementById('btn-copy')
+  if (cb) { clearCopyTimers(); cb.textContent = 'KÓD MÁSOLÁSA'; cb.classList.remove('copied', 'cta', 'shop'); cb.style.opacity = '1' }
+  document.getElementById('result-score-val').textContent = score
+
+  const msg   = document.getElementById('result-msg')
+  const again = document.getElementById('btn-again')
+  const gift  = document.getElementById('result-gift')
+  const prod  = document.getElementById('result-product')
+  const cond  = document.getElementById('result-cond')
+  const pctEl = document.getElementById('result-pct')
+  const ship  = document.getElementById('result-ship')
+  const label = document.getElementById('result-label')
+  const kodLbl = document.getElementById('result-codelabel')
+  const scoreRow = document.querySelector('#result-screen .result-score')
+  rs.classList.remove('pct', 'gift')
+
+  if (caughtCount === 0) {
+    // Jedna dodatkowa szansa, potem kierujemy do sklepu — jak w wersji francuskiej.
+    zeroTries++
+    box.style.display = 'none'
+    note.style.display = 'none'
+    rs.classList.add('try-again')
+    again.style.display = ''
+    if (zeroTries === 1) {
+      document.getElementById('result-title').textContent = 'Próbáld újra!'
+      scoreRow.style.display = ''
+      msg.textContent = 'A TEDDY-k ezúttal elszaladtak. Van még egy esélyed!'
+      again.textContent = 'JÁTSSZ ÚJRA'
+    } else {
+      document.getElementById('result-title').textContent = 'Most nem sikerült…'
+      scoreRow.style.display = 'none'
+      msg.textContent = 'Hosszabbítsd meg az élményt aktuális ajánlatainkkal.'
+      again.textContent = 'Ajánlatok megtekintése'
+    }
+  } else {
+    rs.classList.remove('try-again')
+    scoreRow.style.display = ''
+    msg.textContent = ''
+    again.style.display = ''                 // CZ: powtorka ZOSTAJE takze przy nagrodzie
+    again.textContent = 'JÁTSSZ ÚJRA'
+    note.style.display = ''
+    box.style.display = ''
+
+    // Trzy ROZNE rodzaje nagrody, nie trzy procenty: dostawa / znizka / prezent.
+    let poziom
+    if (rate > 0.75)      poziom = 'gift'
+    else if (rate > 0.50) poziom = 'pct'
+    else                  poziom = 'ship'
+
+    // Klientka dala JEDEN tytul dla wszystkich nagrod, nie trzy osobne.
+    const tytul = { gift: 'Szép munka!', pct: 'Szép munka!', ship: 'Szép munka!' }
+    document.getElementById('result-title').textContent = tytul[poziom]
+
+    gift.style.display  = poziom === 'gift' ? '' : 'none'
+    prod.style.display  = poziom === 'gift' ? '' : 'none'
+    cond.style.display  = poziom === 'gift' ? '' : 'none'
+    pctEl.style.display = poziom === 'pct'  ? '' : 'none'
+    ship.style.display  = poziom === 'ship' ? '' : 'none'
+
+    label.textContent = poziom === 'gift' ? 'Ajándék'
+                      : poziom === 'pct'  ? 'KEDVEZMÉNY A VÁSÁRLÁSBÓL'
+                      : 'a vásárlásodra'
+    // „Kedvezménykód" jest prawda TYLKO przy znizce; przy dostawie i prezencie to nie rabat.
+    kodLbl.textContent = poziom === 'pct' ? 'Kedvezménykód' : 'A kódod'
+    document.getElementById('result-code').textContent =
+      poziom === 'gift' ? 'LINDTHUGIFT' : poziom === 'pct' ? 'LINDTHU10' : 'LINDTHUSHIP'
+
+    note.innerHTML = 'Kizárólag online, a lindt.hu oldalon érvényes 2026. 12. 31-ig.'
+    rs.classList.add(poziom === 'gift' ? 'gift' : 'pct')
+  }
+  document.getElementById('hud').style.display = 'none'   // HUD chowamy dopiero teraz (był widoczny przez outro)
+  document.getElementById('result-screen').classList.remove('hidden')
+}
+
+let copyTimers = []
+function clearCopyTimers() { copyTimers.forEach(clearTimeout); copyTimers = [] }
+
+// Klik przycisku wyniku: najpierw kopiuje kod; po skopiowaniu staje się CTA do sklepu.
+function onCopyBtn() {
+  const btn = document.getElementById('btn-copy')
+  if (btn.classList.contains('shop')) { window.open(LIEN_BOUTIQUE, '_blank', 'noopener'); return }
+  if (btn.classList.contains('cta')) return   // "USE YOUR CODE" — klikalne dopiero jako "SHOP NOW"
+  copyCode()
+}
+
+function copyCode() {
+  const code = document.getElementById('result-code').textContent.trim()
+  const btn = document.getElementById('btn-copy')
+  // miękkie przejście: wygaś (opacity) → podmień tekst/styl → rozjaśnij (transition opacity 0.32s w CSS)
+  const toShopNow = () => {
+    if (!btn.classList.contains('cta')) return
+    btn.style.opacity = '0'
+    copyTimers.push(setTimeout(() => {
+      btn.classList.add('shop'); btn.textContent = 'VÁSÁRLÁS'; btn.style.opacity = '1'
+    }, 320))
+  }
+  const toUseCode = () => {
+    btn.style.opacity = '0'
+    copyTimers.push(setTimeout(() => {
+      btn.classList.remove('copied'); btn.classList.add('cta'); btn.textContent = 'Használd a kódod'; btn.style.opacity = '1'
+      copyTimers.push(setTimeout(toShopNow, 2000))   // po 2 s → SHOP NOW
+    }, 320))
+  }
+  const done = () => {
+    btn.textContent = 'Másolva ✓'; btn.classList.add('copied')
+    copyTimers.push(setTimeout(toUseCode, 1200))     // po potwierdzeniu → USE YOUR CODE
+  }
+  const fallback = () => {
+    const ta = document.createElement('textarea')
+    ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0'
+    document.body.appendChild(ta); ta.focus(); ta.select()
+    try { document.execCommand('copy') } catch(e) {}
+    document.body.removeChild(ta); done()
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(done).catch(fallback)
+    } else fallback()
+  } catch(e) { fallback() }
+}
+
+// Jeden przycisk, dwie role: po pierwszym zerze powtarza gre, po drugim prowadzi na promocje.
+function onAgainBtn() {
+  if (zeroTries >= 2) { window.open(LIEN_OFFRES, '_blank', 'noopener'); return }
+  resetGame()
+}
+
+function resetGame() {
+  document.getElementById('result-screen').classList.add('hidden')
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  startGame()
+}
+
+// ──────────────────────────────────────────────
+// CONTROLS
+// ──────────────────────────────────────────────
+function setupTilt() {
+  window.addEventListener('deviceorientation', (e) => {
+    if (!gameRunning) return
+    const gamma = e.gamma || 0
+    rawTiltX = Math.max(-10, Math.min(10, gamma)) / 10 * 14
+  })
+}
+
+function setupTouch() {
+  canvas.addEventListener('touchstart', (e) => {
+    touchX = e.touches[0].clientX - container.getBoundingClientRect().left
+  }, { passive: true })
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault()
+    touchX = e.touches[0].clientX - container.getBoundingClientRect().left
+  }, { passive: false })
+  canvas.addEventListener('touchend', () => { touchX = null }, { passive: true })
+}
+
+// ──────────────────────────────────────────────
+// iOS PERMISSION
+// ──────────────────────────────────────────────
+function requestIOSPermission() {
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission().then(state => {
+      document.getElementById('ios-perm').classList.add('hidden')
+      if (state === 'granted') setupTilt()
+      startGame()
+    }).catch(() => {
+      document.getElementById('ios-perm').classList.add('hidden')
+      startGame()
+    })
+  } else {
+    document.getElementById('ios-perm').classList.add('hidden')
+    startGame()
+  }
+}
+
+// Ekran „Tap to Start": pokazany na wejściu; pierwszy dotyk odblokowuje i startuje muzykę,
+// potem znika i odsłania ekran startowy z już grającą muzyką.
+function setupTapGate() {
+  if (!TAP_GATE) return
+  const gate = document.getElementById('tap-gate')
+  if (!gate) return
+  gate.classList.remove('hidden')
+  // touchend/click = zdarzenia honorowane przez iOS do odblokowania audio (touchstart NIE działa na iOS)
+  const go = () => { kickMusicEarly(); gate.classList.add('hidden') }
+  gate.addEventListener('touchend', go, { once: true })
+  gate.addEventListener('click', go, { once: true })
+}
+
+function onPlayPressed() {
+  if (!MUSIC_EARLY) unlockBgMusic()   // odblokuj audio w obrębie gestu (mobile) — odtworzy się dopiero w beginPlay
+  // intro: muzyka już wystartowała od pierwszego gestu (kickMusicEarly) — nie ruszamy jej tu
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    document.getElementById('ios-perm').classList.remove('hidden')
+  } else {
+    setupTilt()
+    startGame()
+  }
+}
+
+// ──────────────────────────────────────────────
+// SANTA SLEIGH
+// ──────────────────────────────────────────────
+function scheduleSanta() {
+  const delay = 14000 + Math.random() * 10000  // 14–24 s między przelotami
+  setTimeout(() => {
+    const el = document.getElementById('santa')
+    el.style.top = (7 + Math.random() * 24) + '%'
+    el.style.animation = 'none'
+    el.style.opacity = '0'
+    void el.offsetWidth  // force reflow
+    el.style.animation = 'santaFly 7s linear forwards'
+    el.addEventListener('animationend', () => {
+      el.style.opacity = '0'
+      el.style.animation = 'none'
+      scheduleSanta()
+    }, { once: true })
+  }, delay)
+}
+
+// ──────────────────────────────────────────────
+// WAKE LOCK
+// ──────────────────────────────────────────────
+let wakeLock = null
+
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen')
+    }
+  } catch(e) {}
+}
+
+function releaseWakeLock() {
+  if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && gameRunning) requestWakeLock()
+})
+
+// ──────────────────────────────────────────────
+// FIREWORKS
+// ──────────────────────────────────────────────
+const fwCanvas = document.getElementById('fw-canvas')
+const fwCtx = fwCanvas.getContext('2d')
+
+const FW_COLORS = ['#f5c842','#c0392b','#3d7abd','#2ecc71','#e67e22','#ffffff','#d98aff','#ff6b9d']
+
+class FWParticle {
+  constructor(x, y, color) {
+    const angle = Math.random() * Math.PI * 2
+    const speed = 1.2 + Math.random() * 3.8
+    this.x = x; this.y = y
+    this.vx = Math.cos(angle) * speed
+    this.vy = Math.sin(angle) * speed - 1.5
+    this.alpha = 1
+    this.color = color
+    this.size = 1.5 + Math.random() * 2
+    this.decay = 0.013 + Math.random() * 0.012
+    this.gravity = 0.07
+  }
+  update() {
+    this.x += this.vx
+    this.y += this.vy
+    this.vy += this.gravity
+    this.vx *= 0.97
+    this.alpha -= this.decay
+  }
+  draw(ctx) {
+    ctx.globalAlpha = Math.max(0, this.alpha)
+    ctx.fillStyle = this.color
+    ctx.beginPath()
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  get dead() { return this.alpha <= 0 }
+}
+
+class FWRocket {
+  constructor(x, targetY, h) {
+    this.x = x
+    this.y = h
+    this.targetY = targetY
+    this.vy = (targetY - h) / 32
+    this.color = FW_COLORS[Math.floor(Math.random() * FW_COLORS.length)]
+    this.exploded = false
+    this.particles = []
+    this.trail = []
+  }
+  update() {
+    if (!this.exploded) {
+      this.trail.push({ x: this.x, y: this.y, alpha: 0.7 })
+      if (this.trail.length > 8) this.trail.shift()
+      this.y += this.vy
+      if (this.y <= this.targetY) {
+        this.exploded = true
+        const count = 55 + Math.floor(Math.random() * 35)
+        for (let i = 0; i < count; i++) {
+          this.particles.push(new FWParticle(this.x, this.y, this.color))
+        }
+      }
+    } else {
+      this.particles = this.particles.filter(p => { p.update(); return !p.dead })
+    }
+  }
+  draw(ctx) {
+    if (!this.exploded) {
+      this.trail.forEach((t, i) => {
+        ctx.globalAlpha = t.alpha * (i / this.trail.length) * 0.6
+        ctx.fillStyle = this.color
+        ctx.beginPath()
+        ctx.arc(t.x, t.y, 2, 0, Math.PI * 2)
+        ctx.fill()
+      })
+      ctx.globalAlpha = 1
+      ctx.fillStyle = this.color
+      ctx.beginPath()
+      ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2)
+      ctx.fill()
+    } else {
+      this.particles.forEach(p => p.draw(ctx))
+    }
+    ctx.globalAlpha = 1
+  }
+  get dead() { return this.exploded && this.particles.length === 0 }
+}
+
+let fwRockets = []
+let fwAnimId = null
+let fwScheduleTimer = null
+
+function fwLoop() {
+  fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height)
+  fwRockets = fwRockets.filter(r => { r.update(); r.draw(fwCtx); return !r.dead })
+  if (fwRockets.length > 0) {
+    fwAnimId = requestAnimationFrame(fwLoop)
+  } else {
+    fwAnimId = null
+  }
+}
+
+// Fajerwerki WYŁĄCZONE na życzenie (kod zostaje). Zmień na true, żeby je przywrócić.
+const FIREWORKS_ON = false
+
+function launchFireworkBurst() {
+  if (!FIREWORKS_ON) return
+  const count = 2 + Math.floor(Math.random() * 4)
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const x = fwCanvas.width * (0.12 + Math.random() * 0.76)
+      const targetY = fwCanvas.height * (0.08 + Math.random() * 0.32)
+      fwRockets.push(new FWRocket(x, targetY, fwCanvas.height))
+      if (!fwAnimId) fwAnimId = requestAnimationFrame(fwLoop)
+    }, i * (300 + Math.random() * 400))
+  }
+}
+
+function scheduleFireworks() {
+  const delay = 2500 + Math.random() * 3500
+  fwScheduleTimer = setTimeout(() => {
+    if (!gameRunning) launchFireworkBurst()   // NIE podczas 20 s rozgrywki (tylko start/wynik)
+    scheduleFireworks()
+  }, delay)
+}
+
+// ──────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  resize()
+  fwCanvas.width = container.offsetWidth
+  fwCanvas.height = container.offsetHeight
+  handleOrientation()
+})
+window.addEventListener('orientationchange', handleOrientation)
+if (window.matchMedia) {
+  const mqL = window.matchMedia('(orientation: landscape)')
+  if (mqL.addEventListener) mqL.addEventListener('change', handleOrientation)
+  else if (mqL.addListener) mqL.addListener(handleOrientation)
+}
+
+// Blokada pinch-zoom: iOS czyta gest jako zoom, a po zoomie gra się rozjeżdża.
+// gesture* = zdarzenia pinch Safari (meta user-scalable iOS ignoruje); łapiemy też zoom dwoma palcami w touchmove.
+;['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
+  document.addEventListener(ev, e => e.preventDefault(), { passive: false }))
+document.addEventListener('touchmove', e => { if (e.touches && e.touches.length > 1) e.preventDefault() }, { passive: false })
+resize()
+fwCanvas.width = container.offsetWidth
+fwCanvas.height = container.offsetHeight
+setupTouch()
+setupTapGate()
+// scheduleSanta()  // ZASTĄPIONE przelotem sań (sleigh.png) na starcie rundy — patrz startSleighFlyby()
+if (FIREWORKS_ON) scheduleFireworks()
+
+// Pre-load images on start
+loadImages(() => {
+  // images ready, nothing more needed
+})
+</script>
+</body>
+</html>
