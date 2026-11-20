@@ -443,17 +443,33 @@
      poziomach ekran z prezentem jest najwyzszy (obrazek + nazwa + warunek + podpis kodu)
      i przycisk powtorki wypadal POZA ekran. Scinamy, zaczynajac od obrazka. */
   @media (max-height: 660px) {
-    #result-screen { padding-top: 10px; gap: 3px; }
-    #result-screen .logo { width: 82px; }
-    #result-screen h2 { font-size: 22px; }
-    #result-screen .gift-img { width: 78px; margin-bottom: 6px; }
-    #result-screen .discount-box { padding: 12px 20px 14px; margin-top: 0; }
-    #result-screen .discount-code { margin-top: 4px; padding: 7px 16px; font-size: 17px; }
-    #result-screen .btn-copy { margin-top: 6px; }
-    #result-screen .code-label { margin-top: 10px; }
+    #result-screen { padding-top: 10px; gap: 4px; }
+    #result-screen .logo { width: 86px; }
+    #result-screen h2 { font-size: 23px; }
+    #result-screen .gift-img { width: 104px; margin-bottom: 8px; }
+    #result-screen .discount-box { padding: 16px 20px 18px; margin-top: 0; }
+    /* 16px zamiast 17.5: polska nazwa produktu miesci sie wtedy w JEDNEJ linii
+       nawet na 360px, co oddaje ~22px wysokosci na powiekszenie obrazka. */
+    #result-screen .discount-product { font-size: 16px; }
+    #result-screen .discount-code { margin-top: 5px; padding: 8px 18px; font-size: 18px; }
+    #result-screen .btn-copy { margin-top: 8px; }
+    #result-screen .code-label { margin-top: 12px; }
     #result-screen.pct .discount-box { margin-top: 28px; }
     #result-screen.gift .discount-box { margin-top: 0; }
     .btn-play-again { margin-bottom: 16px; padding: 11px 36px; }
+  }
+
+  /* Skrajnie niskie okna: wracamy do ciasnych wartosci, zeby przycisk nadal sie miescil. */
+  @media (max-height: 580px) {
+    #result-screen { padding-top: 8px; gap: 3px; }
+    #result-screen .logo { width: 78px; }
+    #result-screen h2 { font-size: 21px; }
+    #result-screen .gift-img { width: 76px; margin-bottom: 6px; }
+    #result-screen .discount-box { padding: 11px 18px 13px; }
+    #result-screen .discount-code { margin-top: 4px; padding: 6px 15px; font-size: 16.5px; }
+    #result-screen .btn-copy { margin-top: 6px; }
+    #result-screen .code-label { margin-top: 9px; }
+    .btn-play-again { margin-bottom: 12px; padding: 10px 32px; }
   }
 
   #result-screen .discount-label {
