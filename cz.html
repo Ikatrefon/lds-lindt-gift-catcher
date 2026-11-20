@@ -413,7 +413,10 @@
   }
   #result-screen .discount-product {
     color: #ffffff; font-size: 17.5px; line-height: 1.25; margin-top: 6px;
-    white-space: nowrap;              /* opis ma isc w JEDNEJ linii; 17.5px miesci sie od 360px wzwyz */
+    /* Jedna linia dopoki nazwa sie miesci; dluzsza ZAWIJA sie zamiast wylewac poza ramke.
+       Zastepcza nazwa PL zajmuje 278px przy ~280px wnetrza — dwa piksele zapasu, wiec
+       prawdziwa nazwa od klientki niemal na pewno by nie weszla. */
+    text-wrap: balance;
   }
   #result-screen .discount-cond { color: #ffffff; opacity: 0.85; font-size: 13px; line-height: 1.4; margin-top: 4px; }
   #result-screen .result-msg { color: #ffffff; font-size: 15px; line-height: 1.55; max-width: 280px; margin-top: 10px; }
