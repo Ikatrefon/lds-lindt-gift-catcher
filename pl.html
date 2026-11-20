@@ -439,6 +439,23 @@
     line-height: 1;
     text-shadow: 0 4px 20px rgba(245,200,66,0.6);
   }
+  /* Bardzo niskie okno: S24 z paskiem adresu Chrome ma ~620px, nie 780. Przy trzech
+     poziomach ekran z prezentem jest najwyzszy (obrazek + nazwa + warunek + podpis kodu)
+     i przycisk powtorki wypadal POZA ekran. Scinamy, zaczynajac od obrazka. */
+  @media (max-height: 660px) {
+    #result-screen { padding-top: 10px; gap: 3px; }
+    #result-screen .logo { width: 82px; }
+    #result-screen h2 { font-size: 22px; }
+    #result-screen .gift-img { width: 78px; margin-bottom: 6px; }
+    #result-screen .discount-box { padding: 12px 20px 14px; margin-top: 0; }
+    #result-screen .discount-code { margin-top: 4px; padding: 7px 16px; font-size: 17px; }
+    #result-screen .btn-copy { margin-top: 6px; }
+    #result-screen .code-label { margin-top: 10px; }
+    #result-screen.pct .discount-box { margin-top: 28px; }
+    #result-screen.gift .discount-box { margin-top: 0; }
+    .btn-play-again { margin-bottom: 16px; padding: 11px 36px; }
+  }
+
   #result-screen .discount-label {
     color: #ffffff;
     font-size: 13.6px;
