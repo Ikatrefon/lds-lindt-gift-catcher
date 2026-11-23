@@ -965,9 +965,13 @@ if (location.pathname.indexOf('piano') >= 0) bgMusic.src = 'ELEMENTY/track.mp4'
 const TAP_GATE = true   // FR: ekran „Cliquez pour démarrer" + muzyka od ekranu startowego (wariant piano-tap na stałe)
 
 // ── WARIANT NAGRÓD ──────────────────────────────────────────────
-// fr.html      → progi: GIFT / 10% / 15%
-// fr-gift.html → sama nagroda rzeczowa, bez progów (Dockerfile robi `cp fr.html fr-gift.html`)
-const TIERS = location.pathname.indexOf('gift') < 0
+// Alysse (2026-11-23): „We will only keep the version with the gift instead of the discount.
+// So every customer wins the same thing: a Lindor Mini Cadeau assorti for every purchase
+// above 50 euros (so 2nd QR code)." — progi 10/15% WYPADAJA.
+// Flaga na stale false, zeby /fr.html i /fr-gift.html dzialaly IDENTYCZNIE. Gdyby zostal
+// warunek po nazwie pliku, /fr.html serwowalby nieaktualna mechanike i zly QR byl pulapka.
+// Wersja z progami jest w historii gita (commit 5b6cb81 i wczesniejsze).
+const TIERS = false
 
 const LIEN_BOUTIQUE = 'https://www.lindt.fr/shop/saisons/selection-noel'   // ścieżka z nagrodą
 const LIEN_OFFRES   = 'https://www.lindt.fr/shop/promotion'                // drugie zero → „nos offres du moment"
@@ -1589,7 +1593,7 @@ function showResult() {
   const box = document.getElementById('discount-box')
   const note = document.getElementById('result-note')
   const cb = document.getElementById('btn-copy')
-  if (cb) { clearCopyTimers(); cb.textContent = 'Copier le code'; cb.classList.remove('copied', 'cta', 'shop'); cb.style.opacity = '1' }
+  if (cb) { clearCopyTimers(); cb.textContent = 'Copier le code'; cb.classList.remove('copied', 'shop'); cb.style.opacity = '1' }
   document.getElementById('result-score-val').textContent = score
 
   const msg   = document.getElementById('result-msg')
@@ -1658,7 +1662,6 @@ function clearCopyTimers() { copyTimers.forEach(clearTimeout); copyTimers = [] }
 function onCopyBtn() {
   const btn = document.getElementById('btn-copy')
   if (btn.classList.contains('shop')) { window.open(LIEN_BOUTIQUE, '_blank', 'noopener'); return }
-  if (btn.classList.contains('cta')) return   // "USE YOUR CODE" — klikalne dopiero jako "SHOP NOW"
   copyCode()
 }
 
@@ -1667,22 +1670,15 @@ function copyCode() {
   const btn = document.getElementById('btn-copy')
   // miękkie przejście: wygaś (opacity) → podmień tekst/styl → rozjaśnij (transition opacity 0.32s w CSS)
   const toShopNow = () => {
-    if (!btn.classList.contains('cta')) return
     btn.style.opacity = '0'
     copyTimers.push(setTimeout(() => {
-      btn.classList.add('shop'); btn.textContent = 'Voir la boutique'; btn.style.opacity = '1'
-    }, 320))
-  }
-  const toUseCode = () => {
-    btn.style.opacity = '0'
-    copyTimers.push(setTimeout(() => {
-      btn.classList.remove('copied'); btn.classList.add('cta'); btn.textContent = 'Utilisez votre code'; btn.style.opacity = '1'
-      copyTimers.push(setTimeout(toShopNow, 2000))   // po 2 s → SHOP NOW
+      btn.classList.remove('copied'); btn.classList.add('shop')
+      btn.textContent = 'Voir la boutique'; btn.style.opacity = '1'
     }, 320))
   }
   const done = () => {
     btn.textContent = 'Code copié ✓'; btn.classList.add('copied')
-    copyTimers.push(setTimeout(toUseCode, 1200))     // po potwierdzeniu → USE YOUR CODE
+    copyTimers.push(setTimeout(toShopNow, 1200))     // od razu sklep — bez kroku posredniego
   }
   const fallback = () => {
     const ta = document.createElement('textarea')
