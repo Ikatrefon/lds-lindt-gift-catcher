@@ -77,6 +77,48 @@
   }
 
   /* pauza przy obrocie telefonu do poziomu */
+  /* Wyjscie z gry: X w lewym gornym rogu + potwierdzenie (zyczenie Alysse, 2026-11-23). */
+  #btn-exit {
+    position: absolute; top: 14px; left: 14px; z-index: 25;
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(0,0,0,0.42); border: 1.5px solid rgba(245,200,66,0.75);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0; transition: background 0.2s, transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #btn-exit:active { transform: scale(0.92); }
+  #btn-exit.hidden { display: none; }
+  #btn-exit svg { width: 16px; height: 16px; }
+  /* z-index 70: WYZEJ niz pauza przy obrocie (60), zeby obrot telefonu nie zaslonil pytania */
+  #exit-confirm {
+    position: absolute; inset: 0; z-index: 70;
+    background: rgba(10,3,0,0.96);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; padding: 32px; text-align: center;
+  }
+  #exit-confirm.hidden { display: none; }
+  #exit-confirm .ec-title {
+    font-family: 'Optima', 'Segoe UI', sans-serif; font-size: 26px; color: #BB9750;
+    text-shadow: 0 2px 10px rgba(245,200,66,0.35), 0 4px 9px rgba(0,0,0,0.5); line-height: 1.2;
+  }
+  #exit-confirm .ec-text {
+    font-family: 'Optima', 'Segoe UI', sans-serif; color: #e9cfa0;
+    font-size: 15px; line-height: 1.5; max-width: 280px;
+  }
+  #exit-confirm .ec-yes {
+    margin-top: 6px;
+    background: linear-gradient(90deg, #97702A 0%, #BB9750 50%, #97702A 100%); color: #1a0600;
+    border: none; border-radius: 50px; padding: 14px 34px;
+    font-family: 'Optima', 'Segoe UI', sans-serif; font-size: 15px; letter-spacing: 0.08em;
+    text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 20px rgba(245,200,66,0.3);
+  }
+  #exit-confirm .ec-back {
+    background: none; border: 1px solid rgba(245,200,66,0.5); color: #e9cfa0;
+    border-radius: 50px; padding: 11px 30px;
+    font-family: 'Optima', 'Segoe UI', sans-serif; font-size: 13.5px; letter-spacing: 0.1em;
+    text-transform: uppercase; cursor: pointer;
+  }
+  #exit-confirm .ec-yes:active, #exit-confirm .ec-back:active { transform: scale(0.96); }
   #landscape-pause {
     position: absolute; inset: 0; z-index: 60;
     background: rgba(10,3,0,0.96);
@@ -732,6 +774,19 @@
   <!-- odliczanie 3-2-1 przed startem -->
   <div id="countdown" class="hidden"><span></span></div>
 
+  <!-- wyjscie z gry: X widoczny na ekranach startowych i w trakcie gry, NIE na ekranie wyniku -->
+  <button id="btn-exit" class="hidden" onclick="onExitClick()" aria-label="Quitter le jeu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#BB9750" stroke-width="2.6" stroke-linecap="round" aria-hidden="true">
+      <path d="M18 6 6 18M6 6l12 12"/>
+    </svg>
+  </button>
+  <div id="exit-confirm" class="hidden">
+    <div class="ec-title">Quitter le jeu&nbsp;?</div>
+    <div class="ec-text" id="exit-text">Votre partie en cours sera perdue.</div>
+    <button class="ec-yes" onclick="onExitYes()">Oui, voir la boutique</button>
+    <button class="ec-back" onclick="onExitBack()">Retour au jeu</button>
+  </div>
+
   <!-- pauza przy obrocie do poziomu -->
   <div id="landscape-pause" class="hidden">
     <svg class="lp-rotate" viewBox="0 0 64 64" fill="none" aria-hidden="true">
@@ -1250,12 +1305,44 @@ function isLandscape() {
   if (window.matchMedia) return window.matchMedia('(orientation: landscape)').matches
   return window.innerWidth > window.innerHeight
 }
-function pauseGame() {
+// ── WYJSCIE Z GRY (zyczenie Alysse) ───────────────────────────
+// X jest widoczny na ekranach startowych i w trakcie gry, NIE na ekranie wyniku
+// (tam jest juz wlasny przycisk do sklepu).
+let exitOpen = false
+
+function pokazExit(widoczny) {
+  const b = document.getElementById('btn-exit')
+  if (b) b.classList.toggle('hidden', !widoczny)
+}
+
+function onExitClick() {
+  exitOpen = true
+  pauseGame(false)                 // no-op gdy gra nie trwa; bez nakladki „obroc telefon"
+  // Na ekranach startowych nie ma czego tracic — nie strasz komunikatem o utracie postepu.
+  const t = document.getElementById('exit-text')
+  if (t) t.style.display = gameRunning ? '' : 'none'
+  document.getElementById('exit-confirm').classList.remove('hidden')
+}
+
+function onExitBack() {
+  exitOpen = false
+  document.getElementById('exit-confirm').classList.add('hidden')
+  resumeGame()                     // no-op gdy nie bylo pauzy
+}
+
+function onExitYes() {
+  // Ta sama karta: gracz swiadomie wychodzi, wiec nie zostawiamy mu porzuconej gry w tle.
+  location.href = LIEN_BOUTIQUE
+}
+
+function pauseGame(pokazNakladke = true) {
   if (!gameRunning || paused) return
   paused = true
   musicWasPlaying = !bgMusic.paused
   if (musicWasPlaying) { try { bgMusic.pause() } catch(e) {} }
-  document.getElementById('landscape-pause').classList.remove('hidden')
+  // Pauza przy obrocie pokazuje swoja nakladke; pauza przy wyjsciu z gry NIE — tam
+  // na wierzchu jest pytanie „Quitter le jeu?".
+  if (pokazNakladke) document.getElementById('landscape-pause').classList.remove('hidden')
 }
 function resumeGame() {
   if (!paused) return
@@ -1272,7 +1359,8 @@ function handleOrientation() {
     if (resumeTimer) clearTimeout(resumeTimer)
     resumeTimer = setTimeout(() => {                 // 1 s opóźnienia po powrocie do pionu
       resumeTimer = null
-      if (!isLandscape()) resumeGame()
+      // NIE wznawiaj pod spodem, gdy otwarte jest pytanie o wyjscie z gry.
+      if (!isLandscape() && !exitOpen) resumeGame()
     }, 1000)
   }
 }
@@ -1652,6 +1740,7 @@ function showResult() {
     document.getElementById('result-code').textContent = code
   }
   document.getElementById('hud').style.display = 'none'   // HUD chowamy dopiero teraz (był widoczny przez outro)
+  pokazExit(false)                                        // na ekranie wyniku jest juz wlasny przycisk do sklepu
   document.getElementById('result-screen').classList.remove('hidden')
 }
 
@@ -1701,6 +1790,7 @@ function onAgainBtn() {
 }
 
 function resetGame() {
+  pokazExit(true)
   document.getElementById('result-screen').classList.add('hidden')
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   startGame()
@@ -1970,6 +2060,9 @@ if (FIREWORKS_ON) scheduleFireworks()
 loadImages(() => {
   // images ready, nothing more needed
 })
+
+// X widoczny od razu: brama startowa i ekran startowy tez go maja.
+pokazExit(true)
 </script>
 </body>
 </html>
