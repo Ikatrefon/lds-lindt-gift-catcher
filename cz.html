@@ -1024,7 +1024,10 @@ const TAP_GATE = true   // FR: ekran „Cliquez pour démarrer" + muzyka od ekra
 const TIERS = location.pathname.indexOf('gift') < 0
 
 const LIEN_BOUTIQUE = 'https://www.lindt.cz/obchod/sezona/vanoce'          // ścieżka z nagrodą
-const LIEN_OFFRES   = 'https://www.lindt.cz/obchod/akce'                   // drugie zero -> ogolne akcje („Akce na čokolády")
+// Klientka (2026-11-27): „for CZ you can keep this link, due to Black Friday this offer
+// is disabled but will be enabled in December." Strona jest dzis PUSTA („Nelze najit
+// produkty odpovidajici vyberu") — to stan przejsciowy, nie blad adresu.
+const LIEN_OFFRES   = 'https://www.lindt.cz/obchod/akce/mylindt-nabidky'   // drugie zero -> oferty MyLindt
 
 // Jedna szansa po zerze liczona W RAMACH SESJI. Przeładowanie strony ją zeruje —
 // blokada na stałe wymagałaby zapisu w przeglądarce, co odcięłoby telefon od gry na zawsze.
@@ -1707,9 +1710,9 @@ function showResult() {
     // „Kód slevy" jest prawda TYLKO przy znizce; przy dostawie i prezencie to nie rabat.
     kodLbl.textContent = poziom === 'pct' ? 'Kód slevy' : 'Tvůj kód'
     document.getElementById('result-code').textContent =
-      // Kody dokladnie tak, jak klientka wpisala w arkuszu (2026-11-27): dwa bez „CZ",
-      // prezentowy z „CZ". Celowo NIE ujednolicane.
-      poziom === 'gift' ? 'LINDTCZGIFT' : poziom === 'pct' ? 'LINDT10' : 'LINDTSHIP'
+      // Kody z tabeli klientki (2026-11-27, kolumna CEE). PL ma wlasne: LINDTSHIPPING,
+      // LINDT-10, TEDDYGROSZ. Dla CZ/SK/HU prezentowy rozni sie koncowka kraju.
+      poziom === 'gift' ? 'TEDDYCZ' : poziom === 'pct' ? 'LINDT10' : 'LINDTSHIP'
 
     note.innerHTML = 'Platí pouze online na lindt.cz do 31. 12. 2026.'
     rs.classList.add(poziom === 'gift' ? 'gift' : 'pct')
