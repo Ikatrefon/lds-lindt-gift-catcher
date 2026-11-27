@@ -802,15 +802,15 @@
     <h2 id="result-title">Skvělá práce!</h2>
     <div class="result-score">Tvé skóre: <strong id="result-score-val">0</strong></div>
     <div class="discount-box" id="discount-box">
-      <img src="ELEMENTY/gift-placeholder.png" class="gift-img" id="result-gift" alt="">
+      <img src="ELEMENTY/teddy-gift-100g.png" class="gift-img" id="result-gift" alt="">
       <div class="discount-pct" id="result-pct">10%</div>
       <div class="discount-ship" id="result-ship">DOPRAVA<br>ZDARMA</div>
       <div class="discount-label" id="result-label">SLEVA NA NÁKUP</div>
-      <div class="discount-product" id="result-product">Lindor Mini Dárkové Balení 75&nbsp;g</div>
-      <div class="discount-cond" id="result-cond">k nákupu nad 990&nbsp;Kč</div>
+      <div class="discount-product" id="result-product">TEDDY mléčná čokoláda 100&nbsp;g</div>
+      <div class="discount-cond" id="result-cond">k nákupu nad 1&nbsp;190&nbsp;Kč</div>
       <div class="code-label" id="result-codelabel">Kód slevy</div>
-      <div class="discount-code" id="result-code">LINDTCZ10</div>
-      <button class="btn-copy" id="btn-copy" onclick="onCopyBtn()">KOPÍROVAT KÓD</button>
+      <div class="discount-code" id="result-code">LINDT10</div>
+      <button class="btn-copy" id="btn-copy" onclick="onCopyBtn()">ZKOPÍROVAT KÓD</button>
     </div>
     <div class="result-note" id="result-note"></div>
     <div class="result-msg" id="result-msg"></div>
@@ -1643,7 +1643,7 @@ function showResult() {
   const box = document.getElementById('discount-box')
   const note = document.getElementById('result-note')
   const cb = document.getElementById('btn-copy')
-  if (cb) { clearCopyTimers(); cb.textContent = 'KOPÍROVAT KÓD'; cb.classList.remove('copied', 'cta', 'shop'); cb.style.opacity = '1' }
+  if (cb) { clearCopyTimers(); cb.textContent = 'ZKOPÍROVAT KÓD'; cb.classList.remove('copied', 'cta', 'shop'); cb.style.opacity = '1' }
   document.getElementById('result-score-val').textContent = score
 
   const msg   = document.getElementById('result-msg')
@@ -1668,12 +1668,12 @@ function showResult() {
     if (zeroTries === 1) {
       document.getElementById('result-title').textContent = 'Zkus to znovu!'
       scoreRow.style.display = ''
-      msg.textContent = 'TEDDY ti tentokrát utekli. Máš ještě jeden pokus!'
+      msg.textContent = 'Medvídci ti tentokrát utekli. Máš ještě jeden pokus!'
       again.textContent = 'HRÁT ZNOVU'
     } else {
       document.getElementById('result-title').textContent = 'Tentokrát ne…'
       scoreRow.style.display = 'none'
-      msg.textContent = 'Prodluž si radost s našimi aktuálními nabídkami.'
+      msg.textContent = 'Užij si ještě více radosti s našimi aktuálními nabídkami.'
       again.textContent = 'Zobrazit nabídky'
     }
   } else {
@@ -1707,7 +1707,9 @@ function showResult() {
     // „Kód slevy" jest prawda TYLKO przy znizce; przy dostawie i prezencie to nie rabat.
     kodLbl.textContent = poziom === 'pct' ? 'Kód slevy' : 'Tvůj kód'
     document.getElementById('result-code').textContent =
-      poziom === 'gift' ? 'LINDTCZGIFT' : poziom === 'pct' ? 'LINDTCZ10' : 'LINDTCZSHIP'
+      // Kody dokladnie tak, jak klientka wpisala w arkuszu (2026-11-27): dwa bez „CZ",
+      // prezentowy z „CZ". Celowo NIE ujednolicane.
+      poziom === 'gift' ? 'LINDTCZGIFT' : poziom === 'pct' ? 'LINDT10' : 'LINDTSHIP'
 
     note.innerHTML = 'Platí pouze online na lindt.cz do 31. 12. 2026.'
     rs.classList.add(poziom === 'gift' ? 'gift' : 'pct')
