@@ -802,14 +802,14 @@
     <h2 id="result-title">Świetna robota!</h2>
     <div class="result-score">Twój wynik: <strong id="result-score-val">0</strong></div>
     <div class="discount-box" id="discount-box">
-      <img src="ELEMENTY/gift-placeholder.png" class="gift-img" id="result-gift" alt="">
+      <img src="ELEMENTY/teddy-gift-100g.png" class="gift-img" id="result-gift" alt="">
       <div class="discount-pct" id="result-pct">10%</div>
       <div class="discount-ship" id="result-ship">DOSTAWA<br>GRATIS</div>
       <div class="discount-label" id="result-label">RABAT NA ZAKUPY</div>
-      <div class="discount-product" id="result-product">Lindor Mini Zestaw Prezentowy 75&nbsp;g</div>
-      <div class="discount-cond" id="result-cond">przy zakupach powyżej 199&nbsp;zł</div>
+      <div class="discount-product" id="result-product">TEDDY mleczna czekolada 100&nbsp;g</div>
+      <div class="discount-cond" id="result-cond">przy zakupach powyżej 169&nbsp;zł</div>
       <div class="code-label" id="result-codelabel">Kod rabatowy</div>
-      <div class="discount-code" id="result-code">LINDTPL10</div>
+      <div class="discount-code" id="result-code">LINDT-10</div>
       <button class="btn-copy" id="btn-copy" onclick="onCopyBtn()">KOPIUJ KOD</button>
     </div>
     <div class="result-note" id="result-note"></div>
@@ -1707,7 +1707,9 @@ function showResult() {
     // „Kod rabatowy" jest prawda TYLKO przy znizce; przy dostawie i prezencie to nie rabat.
     kodLbl.textContent = poziom === 'pct' ? 'Kod rabatowy' : 'Twój kod'
     document.getElementById('result-code').textContent =
-      poziom === 'gift' ? 'LINDTPLGIFT' : poziom === 'pct' ? 'LINDTPL10' : 'LINDTPLSHIP'
+      // Kody z tabeli klientki (2026-11-27), kolumna PL — INNE niż CEE (CZ/SK/HU
+      // maja LINDTSHIP, LINDT10, TEDDY<kraj>). Polska ma wlasny komplet.
+      poziom === 'gift' ? 'TEDDYGROSZ' : poziom === 'pct' ? 'LINDT-10' : 'LINDTSHIPPING'
 
     note.innerHTML = 'Obowiązuje wyłącznie online na lindt.pl do 31.12.2026 r.'
     rs.classList.add(poziom === 'gift' ? 'gift' : 'pct')
