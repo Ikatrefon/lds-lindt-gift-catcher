@@ -1031,6 +1031,15 @@ const TIERS = false
 const LIEN_BOUTIQUE = 'https://www.lindt.fr/shop/saisons/selection-noel'   // ścieżka z nagrodą
 const LIEN_OFFRES   = 'https://www.lindt.fr/shop/promotion'                // drugie zero → „nos offres du moment"
 
+// ── OZNACZENIE WEJŚĆ DLA GA4 ────────────────────────────────────
+// Nagroda i wyjście przez X prowadzą pod TEN SAM adres, więc bez parametru
+// w raportach są nie do odróżnienia. Rozdziela je `utm_content`.
+// ⚠️ Sklep Lindta przepuszcza WYŁĄCZNIE parametry `utm_*` — zmierzone 2026-11-27:
+// src / source / from / origin / jeu / teddy dają HTTP 406, czyli gracz zobaczyłby
+// błąd zamiast sklepu. Nie podmieniaj tych nazw na własne.
+const UTM = 'utm_source=teddy-game&utm_medium=jeu&utm_campaign=teddy-noel-2026'
+const boutique = (skad) => `${LIEN_BOUTIQUE}?${UTM}&utm_content=${skad}`
+
 // Jedna szansa po zerze liczona W RAMACH SESJI. Przeładowanie strony ją zeruje —
 // blokada na stałe wymagałaby zapisu w przeglądarce, co odcięłoby telefon od gry na zawsze.
 let zeroTries = 0
@@ -1332,7 +1341,7 @@ function onExitBack() {
 
 function onExitYes() {
   // Ta sama karta: gracz swiadomie wychodzi, wiec nie zostawiamy mu porzuconej gry w tle.
-  location.href = LIEN_BOUTIQUE
+  location.href = boutique('exit')
 }
 
 function pauseGame(pokazNakladke = true) {
@@ -1754,7 +1763,7 @@ function clearCopyTimers() { copyTimers.forEach(clearTimeout); copyTimers = [] }
 // Klik przycisku wyniku: najpierw kopiuje kod; po skopiowaniu staje się CTA do sklepu.
 function onCopyBtn() {
   const btn = document.getElementById('btn-copy')
-  if (btn.classList.contains('shop')) { window.open(LIEN_BOUTIQUE, '_blank', 'noopener'); return }
+  if (btn.classList.contains('shop')) { window.open(boutique('win'), '_blank', 'noopener'); return }
   copyCode()
 }
 
